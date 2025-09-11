@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1">
 <title>Камера з графікою</title>
 <style>
 html, body {
@@ -178,16 +178,15 @@ captureBtn.addEventListener('click', async ()=>{
   overlayImg.src = overlay.src;
   await overlayImg.decode();
 
-  // canvas: ширина=max(overlay.width, vh), висота=overlay.height + vw (бо повертаємо відео)
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(vh, overlayImg.width);
-  canvas.height = overlayImg.height + vw;
+  canvas.width = Math.max(vh, overlayImg.width); // поворот відео
+  canvas.height = overlayImg.height + vw; // висота overlay + ширина відео після повороту
   const ctx = canvas.getContext('2d');
 
-  // Малюємо overlay зверху
+  // Overlay зверху
   ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
 
-  // Малюємо відео під overlay, повернуте на 90° проти годинникової стрілки
+  // Відео під overlay, повернуте на 90° проти годинникової стрілки
   ctx.save();
   ctx.translate(0, overlayImg.height + vw);
   ctx.rotate(-Math.PI/2);
