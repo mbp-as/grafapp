@@ -10,8 +10,8 @@ html, body {
 }
 #container {
   position: absolute;
-  width: 100vh;  /* висота екрану стає шириною */
-  height: 100vw; /* ширина екрану стає висотою */
+  width: 100vh;  
+  height: 100vw; 
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(90deg);
@@ -82,13 +82,9 @@ video, #overlay {
   <video id="camera" autoplay playsinline></video>
   <img id="overlay" src="graf1.png">
   
-  <!-- Кнопка збереження -->
   <div id="captureBtn"></div>
-  
-  <!-- Кнопка меню -->
   <div id="menuBtn">+</div>
   
-  <!-- Елементи керування -->
   <div id="controls">
     <div id="closeControls">✕</div>
     <select id="imageSelect">
@@ -128,41 +124,37 @@ switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='en
 rotateCamBtn.addEventListener('click', ()=>{ videoRotation=(videoRotation+90)%360; video.style.transform=`rotate(${videoRotation+90}deg)`; });
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 
-// Відкриття/закриття меню
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
 
-// Захоплення фото (об’єднане, правильне масштабування)
 captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = vw*2;
-  canvas.height = vh;
-  const ctx = canvas.getContext('2d');
+  // Натуральний розмір overlay
+  const overlayImg = new Image();
+  overlayImg.src = overlay.src;
+  overlayImg.onload = ()=>{
+    const ow = overlayImg.width;
+    const oh = overlayImg.height;
 
-  // Масштаб overlay
-  const videoRect = video.getBoundingClientRect();
-  const overlayRect = overlay.getBoundingClientRect();
-  const scaleX = vw / videoRect.width;
-  const scaleY = vh / videoRect.height;
+    const canvas = document.createElement('canvas');
+    canvas.width = ow + vw; // ліворуч overlay, праворуч відео
+    canvas.height = Math.max(oh, vh);
+    const ctx = canvas.getContext('2d');
 
-  // Ліва частина — без накладки
-  ctx.drawImage(video, 0, 0, vw, vh);
+    // Ліва частина: overlay на чорному фоні
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,ow,canvas.height);
+    ctx.drawImage(overlayImg, 0, 0);
 
-  // Права частина — з накладкою
-  ctx.drawImage(video, vw, 0, vw, vh);
-  ctx.drawImage(
-    overlay,
-    (overlayRect.left - videoRect.left)*scaleX,
-    (overlayRect.top - videoRect.top)*scaleY,
-    overlayRect.width*scaleX,
-    overlayRect.height*scaleY
-  );
+    // Права частина: фото з відео + overlay
+    ctx.drawImage(video, ow, 0, vw, vh);
+    ctx.drawImage(overlay, ow, 0, vw, vh);
 
-  const combinedImg = canvas.toDataURL('image/png');
-  const a = document.createElement('a'); a.href=combinedImg; a.download='combined_photo.png'; a.click();
+    const combinedImg = canvas.toDataURL('image/png');
+    const a = document.createElement('a'); a.href=combinedImg; a.download='combined_photo.png'; a.click();
+  };
 });
 
 startCamera();
