@@ -21,7 +21,7 @@ video, #overlay {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(0deg);
+  transform: translate(-50%, -50%);
   height: 100%;
   width: auto;
   object-fit: contain;
@@ -121,40 +121,41 @@ async function startCamera() {
   } catch(err) { console.error("Помилка доступу до камери:", err); }
 }
 
-switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='environment'?'user':'environment'; startCamera(); });
-rotateCamBtn.addEventListener('click', ()=>{ videoRotation=(videoRotation+90)%360; video.style.transform=`translate(-50%, -50%) rotate(${videoRotation+90}deg)`; });
+switchCamBtn.addEventListener('click', ()=>{
+  currentFacing = currentFacing==='environment'?'user':'environment';
+  startCamera();
+});
+
+rotateCamBtn.addEventListener('click', ()=>{
+  videoRotation = (videoRotation + 90) % 360;
+  video.style.transform = `translate(-50%, -50%) rotate(${videoRotation}deg)`;
+});
+
+// Зміна overlay для перегляду
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 
+// Відкриття/закриття меню
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
 
+// Збереження фото тільки з відео (правильна орієнтація)
 captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
 
-  const overlayImg = new Image();
-  overlayImg.src = overlay.src;
-  overlayImg.onload = ()=>{
-    const ow = overlayImg.width;
-    const oh = overlayImg.height;
+  const canvas = document.createElement('canvas');
+  canvas.width = vw;
+  canvas.height = vh;
+  const ctx = canvas.getContext('2d');
 
-    const canvas = document.createElement('canvas');
-    canvas.width = ow + vw;
-    canvas.height = Math.max(oh, vh);
-    const ctx = canvas.getContext('2d');
+  // Малюємо відео без трансформацій CSS
+  ctx.drawImage(video, 0, 0, vw, vh);
 
-    // Ліва частина: overlay на чорному фоні
-    ctx.fillStyle = "black";
-    ctx.fillRect(0,0,ow,canvas.height);
-    ctx.drawImage(overlayImg, 0, 0);
-
-    // Права частина: фото з відео + overlay
-    ctx.drawImage(video, ow, 0, vw, vh);
-    ctx.drawImage(overlay, ow, 0, vw, vh);
-
-    const combinedImg = canvas.toDataURL('image/png');
-    const a = document.createElement('a'); a.href=combinedImg; a.download='combined_photo.png'; a.click();
-  };
+  const imgData = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = imgData;
+  a.download = 'photo.png';
+  a.click();
 });
 
 startCamera();
