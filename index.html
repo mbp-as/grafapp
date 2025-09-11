@@ -23,6 +23,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transform: rotate(0deg);
   }
   #overlay {
     position: absolute;
@@ -31,23 +32,24 @@
     height: 100%;
     pointer-events: none;
     object-fit: contain;
-    transform: rotate(0deg);
   }
   #controls {
     position: absolute;
-    bottom: 10px;
+    bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255,255,255,0.8);
-    padding: 10px;
-    border-radius: 10px;
+    background: rgba(255,255,255,0.9);
+    padding: 15px 20px;
+    border-radius: 15px;
     display: flex;
-    gap: 10px;
+    gap: 15px;
     align-items: center;
   }
   select, button {
-    font-size: 16px;
-    padding: 5px 10px;
+    font-size: 20px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #aaa;
   }
 </style>
 </head>
@@ -63,7 +65,7 @@
       <option value="graf4.png">Graf 4</option>
     </select>
     <button id="switchCam">Перевернути камеру</button>
-    <button id="rotateImg">Повернути зображення</button>
+    <button id="rotateCam">Повернути відео</button>
   </div>
 </div>
 
@@ -72,10 +74,10 @@
   const overlay = document.getElementById('overlay');
   const select = document.getElementById('imageSelect');
   const switchCamBtn = document.getElementById('switchCam');
-  const rotateBtn = document.getElementById('rotateImg');
+  const rotateCamBtn = document.getElementById('rotateCam');
 
-  let currentFacing = 'environment'; // спочатку задня камера
-  let rotation = 0;
+  let currentFacing = 'environment';
+  let videoRotation = 0;
 
   async function startCamera() {
     if (video.srcObject) {
@@ -98,10 +100,10 @@
     startCamera();
   });
 
-  // Поворот зображення на 90°
-  rotateBtn.addEventListener('click', () => {
-    rotation = (rotation + 90) % 360;
-    overlay.style.transform = `rotate(${rotation}deg)`;
+  // Поворот відео на 90°
+  rotateCamBtn.addEventListener('click', () => {
+    videoRotation = (videoRotation + 90) % 360;
+    video.style.transform = `rotate(${videoRotation}deg)`;
   });
 
   // Зміна накладного зображення
