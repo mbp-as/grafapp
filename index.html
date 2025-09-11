@@ -51,6 +51,18 @@
     border-radius: 10px;
     border: 1px solid #aaa;
   }
+  #captureBtn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: 2px solid #ccc;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -67,6 +79,7 @@
     <button id="switchCam">Перевернути камеру</button>
     <button id="rotateCam">Повернути відео</button>
   </div>
+  <div id="captureBtn"></div>
 </div>
 
 <script>
@@ -75,6 +88,7 @@
   const select = document.getElementById('imageSelect');
   const switchCamBtn = document.getElementById('switchCam');
   const rotateCamBtn = document.getElementById('rotateCam');
+  const captureBtn = document.getElementById('captureBtn');
 
   let currentFacing = 'environment';
   let videoRotation = 0;
@@ -94,21 +108,52 @@
     }
   }
 
-  // Перемикання камери
   switchCamBtn.addEventListener('click', () => {
     currentFacing = currentFacing === 'environment' ? 'user' : 'environment';
     startCamera();
   });
 
-  // Поворот відео на 90°
   rotateCamBtn.addEventListener('click', () => {
     videoRotation = (videoRotation + 90) % 360;
     video.style.transform = `rotate(${videoRotation}deg)`;
   });
 
-  // Зміна накладного зображення
   select.addEventListener('change', () => {
     overlay.src = select.value;
+  });
+
+  // Захоплення фото
+  captureBtn.addEventListener('click', () => {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    // Фото з накладкою
+    const canvas1 = document.createElement('canvas');
+    canvas1.width = width;
+    canvas1.height = height;
+    const ctx1 = canvas1.getContext('2d');
+    ctx1.drawImage(video, 0, 0, width, height);
+    ctx1.drawImage(overlay, 0, 0, width, height);
+    const imgWithOverlay = canvas1.toDataURL('image/png');
+
+    // Фото без накладки
+    const canvas2 = document.createElement('canvas');
+    canvas2.width = width;
+    canvas2.height = height;
+    const ctx2 = canvas2.getContext('2d');
+    ctx2.drawImage(video, 0, 0, width, height);
+    const imgWithoutOverlay = canvas2.toDataURL('image/png');
+
+    // Завантаження фото
+    const a1 = document.createElement('a');
+    a1.href = imgWithOverlay;
+    a1.download = 'photo_with_overlay.png';
+    a1.click();
+
+    const a2 = document.createElement('a');
+    a2.href = imgWithoutOverlay;
+    a2.download = 'photo_without_overlay.png';
+    a2.click();
   });
 
   startCamera();
