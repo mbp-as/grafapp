@@ -6,7 +6,7 @@
 <title>Камера з графікою</title>
 <style>
 html, body {
-  margin: 0; padding: 0; overflow: hidden; height: 100%; background: black;
+  margin: 0; padding: 0; overflow: hidden; height: 100%; background: black; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 #container {
   position: absolute;
@@ -25,7 +25,10 @@ video, #overlay {
   height: 100%;
   width: auto;
   object-fit: contain;
+  border-radius: 12px;
 }
+
+/* Кнопка камери iOS стиль */
 #captureBtn {
   position: absolute;
   right: 15px;
@@ -35,10 +38,15 @@ video, #overlay {
   height: 120px;
   border-radius: 50%;
   background: rgba(255,255,255,0.95);
-  border: 3px solid #ccc;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   cursor: pointer;
   z-index: 20;
+  transition: all 0.2s;
 }
+#captureBtn:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.3); }
+
+/* Кнопка плюс під кнопкою камери */
 #menuBtn {
   position: absolute;
   right: 15px;
@@ -47,14 +55,19 @@ video, #overlay {
   height: 60px;
   border-radius: 50%;
   background: rgba(255,255,255,0.9);
-  border: 2px solid #ccc;
+  border: none;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
   cursor: pointer;
   z-index: 20;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 36px;
+  transition: all 0.2s;
 }
+#menuBtn:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
+
+/* Меню контролів */
 #controls {
   position: absolute;
   bottom: 120px;
@@ -69,15 +82,33 @@ video, #overlay {
   align-items: center;
   display: none;
   z-index: 15;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
+
+/* Селект та кнопки iOS стиль */
 #controls select, #controls button { 
-  font-size: 22px; padding: 12px 18px; border-radius: 16px; border: 1px solid #aaa; width: 220px; text-align: center;
+  font-size: 22px; padding: 12px 18px; border-radius: 18px; border: 1px solid #ccc; width: 220px; text-align: center;
+  background: #f2f2f7; /* світлий iOS фон */
 }
+#controls select:focus, #controls button:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.3); }
+
 #closeControls { 
   align-self: flex-end; font-size: 30px; cursor: pointer; margin-bottom: 5px;
 }
+
 #zoomControls { display: flex; gap: 15px; }
-#zoomControls button { width: 60px; height: 60px; font-size: 32px; border-radius: 50%; }
+#zoomControls button {
+  width: 60px;
+  height: 60px;
+  font-size: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f2f2f7;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#zoomControls button:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
@@ -179,14 +210,11 @@ captureBtn.addEventListener('click', async ()=>{
   await overlayImg.decode();
 
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(vh, overlayImg.width); // поворот відео
-  canvas.height = overlayImg.height + vw; // висота overlay + ширина відео після повороту
+  canvas.width = Math.max(vh, overlayImg.width);
+  canvas.height = overlayImg.height + vw;
   const ctx = canvas.getContext('2d');
 
-  // Overlay зверху
   ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
-
-  // Відео під overlay, повернуте на 90° проти годинникової стрілки
   ctx.save();
   ctx.translate(0, overlayImg.height + vw);
   ctx.rotate(-Math.PI/2);
