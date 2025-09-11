@@ -21,7 +21,7 @@ video, #overlay {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1);
   height: 100%;
   width: auto;
   object-fit: contain;
@@ -30,8 +30,8 @@ video, #overlay {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: rgba(255,255,255,0.9);
   border: 2px solid #ccc;
@@ -40,34 +40,41 @@ video, #overlay {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 36px;
+  font-size: 40px;
 }
-#captureBtn {
-  right: 15px;
-}
-#menuBtn {
-  right: 120px; /* зліва від capture */
-}
+#captureBtn { right: 15px; }
+#menuBtn { right: 130px; }
+
 #controls {
   position: absolute;
-  bottom: 100px;
+  bottom: 120px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255,255,255,0.9);
-  padding: 20px 25px;
-  border-radius: 25px;
+  background: rgba(255,255,255,0.95);
+  padding: 25px 30px;
+  border-radius: 30px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
   align-items: center;
   display: none;
   z-index: 15;
 }
 #controls select, #controls button { 
-  font-size: 20px; padding: 12px 18px; border-radius: 14px; border: 1px solid #aaa; width: 180px; text-align: center;
+  font-size: 22px; padding: 12px 18px; border-radius: 16px; border: 1px solid #aaa; width: 200px; text-align: center;
 }
 #closeControls { 
-  align-self: flex-end; font-size: 28px; cursor: pointer; margin-bottom: 5px;
+  align-self: flex-end; font-size: 30px; cursor: pointer; margin-bottom: 5px;
+}
+#zoomControls {
+  display: flex;
+  gap: 15px;
+}
+#zoomControls button {
+  width: 50px;
+  height: 50px;
+  font-size: 28px;
+  border-radius: 50%;
 }
 </style>
 </head>
@@ -89,6 +96,10 @@ video, #overlay {
     </select>
     <button id="switchCam">Перевернути камеру</button>
     <button id="rotateCam">Повернути відео</button>
+    <div id="zoomControls">
+      <button id="zoomIn">+</button>
+      <button id="zoomOut">-</button>
+    </div>
   </div>
 </div>
 
@@ -102,9 +113,12 @@ const captureBtn = document.getElementById('captureBtn');
 const menuBtn = document.getElementById('menuBtn');
 const controls = document.getElementById('controls');
 const closeControls = document.getElementById('closeControls');
+const zoomInBtn = document.getElementById('zoomIn');
+const zoomOutBtn = document.getElementById('zoomOut');
 
 let currentFacing = 'environment';
 let videoRotation = 0;
+let videoScale = 1;
 
 async function startCamera() {
   if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
@@ -121,13 +135,22 @@ switchCamBtn.addEventListener('click', ()=>{
 
 rotateCamBtn.addEventListener('click', ()=>{
   videoRotation = (videoRotation + 90) % 360;
-  video.style.transform = `translate(-50%, -50%) rotate(${videoRotation}deg)`;
+  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
 });
 
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
+
+zoomInBtn.addEventListener('click', ()=>{
+  videoScale += 0.1;
+  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
+});
+zoomOutBtn.addEventListener('click', ()=>{
+  videoScale = Math.max(0.1, videoScale - 0.1);
+  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
+});
 
 captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
