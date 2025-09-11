@@ -26,55 +26,48 @@ video, #overlay {
   width: auto;
   object-fit: contain;
 }
-#captureBtn {
+#captureBtn, #menuBtn {
   position: absolute;
-  right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  width: 70px;
-  height: 70px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   background: rgba(255,255,255,0.9);
   border: 2px solid #ccc;
   cursor: pointer;
   z-index: 20;
-}
-#menuBtn {
-  position: absolute;
-  left: 15px;
-  bottom: 15px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.9);
-  border: 2px solid #ccc;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 30px;
-  cursor: pointer;
-  z-index: 20;
+  font-size: 36px;
+}
+#captureBtn {
+  right: 15px;
+}
+#menuBtn {
+  right: 120px; /* зліва від capture */
 }
 #controls {
   position: absolute;
-  bottom: 90px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255,255,255,0.9);
-  padding: 15px 20px;
-  border-radius: 20px;
+  padding: 20px 25px;
+  border-radius: 25px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
   display: none;
   z-index: 15;
 }
 #controls select, #controls button { 
-  font-size: 18px; padding: 8px 12px; border-radius: 12px; border: 1px solid #aaa; width: 160px; text-align: center;
+  font-size: 20px; padding: 12px 18px; border-radius: 14px; border: 1px solid #aaa; width: 180px; text-align: center;
 }
 #closeControls { 
-  align-self: flex-end; font-size: 24px; cursor: pointer; margin-bottom: 5px;
+  align-self: flex-end; font-size: 28px; cursor: pointer; margin-bottom: 5px;
 }
 </style>
 </head>
@@ -83,7 +76,7 @@ video, #overlay {
   <video id="camera" autoplay playsinline></video>
   <img id="overlay" src="graf1.png">
   
-  <div id="captureBtn"></div>
+  <div id="captureBtn">📷</div>
   <div id="menuBtn">+</div>
   
   <div id="controls">
@@ -131,14 +124,11 @@ rotateCamBtn.addEventListener('click', ()=>{
   video.style.transform = `translate(-50%, -50%) rotate(${videoRotation}deg)`;
 });
 
-// Зміна overlay для перегляду
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 
-// Відкриття/закриття меню
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
 
-// Збереження фото тільки з відео (правильна орієнтація)
 captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
@@ -148,7 +138,6 @@ captureBtn.addEventListener('click', ()=>{
   canvas.height = vh;
   const ctx = canvas.getContext('2d');
 
-  // Малюємо відео без трансформацій CSS
   ctx.drawImage(video, 0, 0, vw, vh);
 
   const imgData = canvas.toDataURL('image/png');
