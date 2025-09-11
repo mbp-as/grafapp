@@ -26,7 +26,6 @@ video, #overlay {
   width: auto;
   object-fit: contain;
 }
-/* Кнопка камери */
 #captureBtn {
   position: absolute;
   right: 15px;
@@ -40,7 +39,6 @@ video, #overlay {
   cursor: pointer;
   z-index: 20;
 }
-/* Кнопка меню (+) під кнопкою камери */
 #menuBtn {
   position: absolute;
   right: 15px;
@@ -57,7 +55,6 @@ video, #overlay {
   align-items: center;
   font-size: 36px;
 }
-
 #controls {
   position: absolute;
   bottom: 120px;
@@ -79,16 +76,8 @@ video, #overlay {
 #closeControls { 
   align-self: flex-end; font-size: 30px; cursor: pointer; margin-bottom: 5px;
 }
-#zoomControls {
-  display: flex;
-  gap: 15px;
-}
-#zoomControls button {
-  width: 60px;
-  height: 60px;
-  font-size: 32px;
-  border-radius: 50%;
-}
+#zoomControls { display: flex; gap: 15px; }
+#zoomControls button { width: 60px; height: 60px; font-size: 32px; border-radius: 50%; }
 </style>
 </head>
 <body>
@@ -189,13 +178,21 @@ captureBtn.addEventListener('click', async ()=>{
   overlayImg.src = overlay.src;
   await overlayImg.decode();
 
+  // canvas: ширина=max(overlay.width, vh), висота=overlay.height + vw (бо повертаємо відео)
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(vw, overlayImg.width);
-  canvas.height = overlayImg.height + vh;
+  canvas.width = Math.max(vh, overlayImg.width);
+  canvas.height = overlayImg.height + vw;
   const ctx = canvas.getContext('2d');
 
+  // Малюємо overlay зверху
   ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
-  ctx.drawImage(video, 0, overlayImg.height, canvas.width, vh);
+
+  // Малюємо відео під overlay, повернуте на 90° проти годинникової стрілки
+  ctx.save();
+  ctx.translate(0, overlayImg.height + vw);
+  ctx.rotate(-Math.PI/2);
+  ctx.drawImage(video, 0, 0, vw, vh);
+  ctx.restore();
 
   const imgData = canvas.toDataURL('image/png');
   const a = document.createElement('a');
