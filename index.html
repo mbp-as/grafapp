@@ -26,12 +26,27 @@ video, #overlay {
   width: auto;
   object-fit: contain;
 }
-#captureBtn, #menuBtn {
+/* Кнопка камери */
+#captureBtn {
   position: absolute;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  border: 3px solid #ccc;
+  cursor: pointer;
+  z-index: 20;
+}
+/* Кнопка меню (+) під кнопкою камери */
+#menuBtn {
+  position: absolute;
+  right: 15px;
+  top: calc(50% + 70px);
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: rgba(255,255,255,0.9);
   border: 2px solid #ccc;
@@ -40,10 +55,8 @@ video, #overlay {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 40px;
+  font-size: 36px;
 }
-#captureBtn { right: 15px; }
-#menuBtn { right: 130px; }
 
 #controls {
   position: absolute;
@@ -61,7 +74,7 @@ video, #overlay {
   z-index: 15;
 }
 #controls select, #controls button { 
-  font-size: 22px; padding: 12px 18px; border-radius: 16px; border: 1px solid #aaa; width: 200px; text-align: center;
+  font-size: 22px; padding: 12px 18px; border-radius: 16px; border: 1px solid #aaa; width: 220px; text-align: center;
 }
 #closeControls { 
   align-self: flex-end; font-size: 30px; cursor: pointer; margin-bottom: 5px;
@@ -71,9 +84,9 @@ video, #overlay {
   gap: 15px;
 }
 #zoomControls button {
-  width: 50px;
-  height: 50px;
-  font-size: 28px;
+  width: 60px;
+  height: 60px;
+  font-size: 32px;
   border-radius: 50%;
 }
 </style>
@@ -83,7 +96,7 @@ video, #overlay {
   <video id="camera" autoplay playsinline></video>
   <img id="overlay" src="graf0.png">
   
-  <div id="captureBtn">📷</div>
+  <div id="captureBtn"></div>
   <div id="menuBtn">+</div>
   
   <div id="controls">
@@ -127,7 +140,6 @@ async function startCamera() {
   } catch(err) { console.error("Помилка доступу до камери:", err); }
 }
 
-// Автодетекція графіків
 async function detectGraphs() {
   const maxFiles = 20; 
   let found = false;
@@ -175,18 +187,14 @@ captureBtn.addEventListener('click', async ()=>{
 
   const overlayImg = new Image();
   overlayImg.src = overlay.src;
-  await overlayImg.decode(); // чекаємо поки завантажиться
+  await overlayImg.decode();
 
-  // canvas з розміром: ширина=max(vw, overlay.width), висота=overlay+відео
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(vw, overlayImg.width);
   canvas.height = overlayImg.height + vh;
   const ctx = canvas.getContext('2d');
 
-  // Малюємо overlay зверху
   ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
-
-  // Малюємо відео під overlay
   ctx.drawImage(video, 0, overlayImg.height, canvas.width, vh);
 
   const imgData = canvas.toDataURL('image/png');
