@@ -11,10 +11,7 @@ html, body {
   touch-action: manipulation;
   overscroll-behavior: none;
 }
-* {
-  -ms-touch-action: manipulation;
-  touch-action: manipulation;
-}
+* { touch-action: manipulation; }
 #container {
   position: absolute;
   width: 100vh;  
@@ -49,14 +46,9 @@ video, #overlay {
   box-shadow: 0 6px 15px rgba(0,0,0,0.35);
   cursor: pointer;
   z-index: 20;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0;
 }
-#captureBtn:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
 
-/* Кнопка плюс під кнопкою затвору */
+/* Кнопка add.svg під затвором */
 #menuBtn {
   position: absolute;
   right: 15px;
@@ -72,11 +64,10 @@ video, #overlay {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 40px;
 }
-#menuBtn:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
+#menuBtn img { width: 50%; height: 50%; }
 
-/* Кнопка наступного графа над затвором */
+/* Кнопка arrow.svg над затвором */
 #nextGraphBtn {
   position: absolute;
   right: 15px;
@@ -85,8 +76,6 @@ video, #overlay {
   height: 100px;
   border-radius: 50%;
   background: #007aff;
-  color: white;
-  font-size: 48px;
   border: none;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   cursor: pointer;
@@ -95,7 +84,7 @@ video, #overlay {
   justify-content: center;
   align-items: center;
 }
-#nextGraphBtn:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
+#nextGraphBtn img { width: 50%; height: 50%; }
 
 /* Меню контролів - збільшене, трохи зміщене від краю */
 #controls {
@@ -113,7 +102,7 @@ video, #overlay {
   display: none;
   z-index: 15;
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  width: 400px; /* збільшене меню */
+  width: 400px;
 }
 
 /* Селект та кнопки iOS стиль */
@@ -123,9 +112,7 @@ video, #overlay {
 }
 #controls select:focus, #controls button:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.3); }
 
-#closeControls { 
-  align-self: flex-end; font-size: 28px; cursor: pointer; margin-bottom: 5px;
-}
+#closeControls { align-self: flex-end; font-size: 28px; cursor: pointer; margin-bottom: 5px; }
 
 #zoomControls { display: flex; gap: 15px; }
 #zoomControls button {
@@ -137,7 +124,6 @@ video, #overlay {
   background: #f2f2f7;
   box-shadow: 0 3px 8px rgba(0,0,0,0.25);
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -151,8 +137,8 @@ video, #overlay {
   <img id="overlay" src="graf0.png">
   
   <div id="captureBtn"></div>
-  <div id="nextGraphBtn">→</div>
-  <div id="menuBtn">+</div>
+  <button id="nextGraphBtn"><img src="arrow.svg" alt="next"></button>
+  <button id="menuBtn"><img src="add.svg" alt="add"></button>
   
   <div id="controls">
     <div id="closeControls">✕</div>
@@ -255,5 +241,5 @@ captureBtn.addEventListener('click', async ()=>{
 startCamera();
 detectGraphs();
 </script>
-</body
+</body>
 </html>
