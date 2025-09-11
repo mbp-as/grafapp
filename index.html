@@ -18,12 +18,13 @@ html, body {
   transform-origin: center center;
 }
 video, #overlay {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  height: 100%;
+  width: auto;
+  object-fit: contain;
 }
 #captureBtn {
   position: absolute;
@@ -121,7 +122,7 @@ async function startCamera() {
 }
 
 switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='environment'?'user':'environment'; startCamera(); });
-rotateCamBtn.addEventListener('click', ()=>{ videoRotation=(videoRotation+90)%360; video.style.transform=`rotate(${videoRotation+90}deg)`; });
+rotateCamBtn.addEventListener('click', ()=>{ videoRotation=(videoRotation+90)%360; video.style.transform=`translate(-50%, -50%) rotate(${videoRotation+90}deg)`; });
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
@@ -131,7 +132,6 @@ captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
 
-  // Натуральний розмір overlay
   const overlayImg = new Image();
   overlayImg.src = overlay.src;
   overlayImg.onload = ()=>{
@@ -139,7 +139,7 @@ captureBtn.addEventListener('click', ()=>{
     const oh = overlayImg.height;
 
     const canvas = document.createElement('canvas');
-    canvas.width = ow + vw; // ліворуч overlay, праворуч відео
+    canvas.width = ow + vw;
     canvas.height = Math.max(oh, vh);
     const ctx = canvas.getContext('2d');
 
