@@ -23,7 +23,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: rotate(0deg);
   }
   #overlay {
     position: absolute;
@@ -32,18 +31,23 @@
     height: 100%;
     pointer-events: none;
     object-fit: contain;
+    transform: rotate(0deg);
   }
-  #picker {
+  #controls {
     position: absolute;
     bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255,255,255,0.8);
-    padding: 5px;
+    padding: 10px;
     border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
-  select {
+  select, button {
     font-size: 16px;
+    padding: 5px 10px;
   }
 </style>
 </head>
@@ -51,13 +55,15 @@
 <div id="container">
   <video id="camera" autoplay playsinline></video>
   <img id="overlay" src="graf1.png">
-  <div id="picker">
+  <div id="controls">
     <select id="imageSelect">
       <option value="graf1.png">Graf 1</option>
       <option value="graf2.png">Graf 2</option>
       <option value="graf3.png">Graf 3</option>
       <option value="graf4.png">Graf 4</option>
     </select>
+    <button id="switchCam">Перевернути камеру</button>
+    <button id="rotateImg">Повернути зображення</button>
   </div>
 </div>
 
@@ -65,22 +71,45 @@
   const video = document.getElementById('camera');
   const overlay = document.getElementById('overlay');
   const select = document.getElementById('imageSelect');
+  const switchCamBtn = document.getElementById('switchCam');
+  const rotateBtn = document.getElementById('rotateImg');
 
-  // Запит на доступ до задньої камери
-  navigator.mediaDevices.getUserMedia({ 
-    video: { facingMode: { exact: "environment" } }, audio: false 
-  })
-  .then(stream => {
-    video.srcObject = stream;
-  })
-  .catch(err => {
-    console.error("Помилка доступу до камери:", err);
+  let currentFacing = 'environment'; // спочатку задня камера
+  let rotation = 0;
+
+  async function startCamera() {
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: { exact: currentFacing } }, 
+        audio: false 
+      });
+      video.srcObject = stream;
+    } catch(err) {
+      console.error("Помилка доступу до камери:", err);
+    }
+  }
+
+  // Перемикання камери
+  switchCamBtn.addEventListener('click', () => {
+    currentFacing = currentFacing === 'environment' ? 'user' : 'environment';
+    startCamera();
+  });
+
+  // Поворот зображення на 90°
+  rotateBtn.addEventListener('click', () => {
+    rotation = (rotation + 90) % 360;
+    overlay.style.transform = `rotate(${rotation}deg)`;
   });
 
   // Зміна накладного зображення
   select.addEventListener('change', () => {
     overlay.src = select.value;
   });
+
+  startCamera();
 </script>
 </body>
 </html>
