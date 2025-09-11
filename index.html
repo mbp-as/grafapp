@@ -115,7 +115,6 @@ let currentFacing = 'environment';
 let videoRotation = 0;
 let videoScale = 1;
 
-// Масштабування відео
 function updateVideoTransform() {
   video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
 }
@@ -130,7 +129,7 @@ async function startCamera() {
 
 // Автодетекція графіків
 async function detectGraphs() {
-  const maxFiles = 20; // максимум перевіряти graf0-graf19
+  const maxFiles = 20; 
   let found = false;
   for(let i=0; i<maxFiles; i++){
     const url = `graf${i}.png`;
@@ -142,7 +141,7 @@ async function detectGraphs() {
       if(i===0) opt.selected = true;
       select.appendChild(opt);
       if(!found) { overlay.src = url; found = true; }
-    } catch(e){ /* файл не існує */ }
+    } catch(e){ }
   }
 }
 
@@ -170,16 +169,25 @@ select.addEventListener('change', ()=>{ overlay.src = select.value; });
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
 
-captureBtn.addEventListener('click', ()=>{
+captureBtn.addEventListener('click', async ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
 
+  const overlayImg = new Image();
+  overlayImg.src = overlay.src;
+  await overlayImg.decode(); // чекаємо поки завантажиться
+
+  // canvas з розміром: ширина=max(vw, overlay.width), висота=overlay+відео
   const canvas = document.createElement('canvas');
-  canvas.width = vw;
-  canvas.height = vh;
+  canvas.width = Math.max(vw, overlayImg.width);
+  canvas.height = overlayImg.height + vh;
   const ctx = canvas.getContext('2d');
 
-  ctx.drawImage(video, 0, 0, vw, vh);
+  // Малюємо overlay зверху
+  ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
+
+  // Малюємо відео під overlay
+  ctx.drawImage(video, 0, overlayImg.height, canvas.width, vh);
 
   const imgData = canvas.toDataURL('image/png');
   const a = document.createElement('a');
