@@ -81,19 +81,14 @@ video, #overlay {
 <body>
 <div id="container">
   <video id="camera" autoplay playsinline></video>
-  <img id="overlay" src="graf1.png">
+  <img id="overlay" src="graf0.png">
   
   <div id="captureBtn">📷</div>
   <div id="menuBtn">+</div>
   
   <div id="controls">
     <div id="closeControls">✕</div>
-    <select id="imageSelect">
-      <option value="graf1.png">Graf 1</option>
-      <option value="graf2.png">Graf 2</option>
-      <option value="graf3.png">Graf 3</option>
-      <option value="graf4.png">Graf 4</option>
-    </select>
+    <select id="imageSelect"></select>
     <button id="switchCam">Перевернути камеру</button>
     <button id="rotateCam">Повернути відео</button>
     <div id="zoomControls">
@@ -120,12 +115,35 @@ let currentFacing = 'environment';
 let videoRotation = 0;
 let videoScale = 1;
 
+// Масштабування відео
+function updateVideoTransform() {
+  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
+}
+
 async function startCamera() {
   if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: currentFacing } }, audio: false });
     video.srcObject = stream;
   } catch(err) { console.error("Помилка доступу до камери:", err); }
+}
+
+// Автодетекція графіків
+async function detectGraphs() {
+  const maxFiles = 20; // максимум перевіряти graf0-graf19
+  let found = false;
+  for(let i=0; i<maxFiles; i++){
+    const url = `graf${i}.png`;
+    try {
+      await fetch(url, { method: 'HEAD' });
+      const opt = document.createElement('option');
+      opt.value = url;
+      opt.text = `Graf ${i}`;
+      if(i===0) opt.selected = true;
+      select.appendChild(opt);
+      if(!found) { overlay.src = url; found = true; }
+    } catch(e){ /* файл не існує */ }
+  }
 }
 
 switchCamBtn.addEventListener('click', ()=>{
@@ -135,22 +153,22 @@ switchCamBtn.addEventListener('click', ()=>{
 
 rotateCamBtn.addEventListener('click', ()=>{
   videoRotation = (videoRotation + 90) % 360;
-  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
+  updateVideoTransform();
 });
-
-select.addEventListener('change', ()=>{ overlay.src = select.value; });
-
-menuBtn.addEventListener('click', ()=>controls.style.display='flex');
-closeControls.addEventListener('click', ()=>controls.style.display='none');
 
 zoomInBtn.addEventListener('click', ()=>{
   videoScale += 0.1;
-  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
+  updateVideoTransform();
 });
+
 zoomOutBtn.addEventListener('click', ()=>{
   videoScale = Math.max(0.1, videoScale - 0.1);
-  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
+  updateVideoTransform();
 });
+
+select.addEventListener('change', ()=>{ overlay.src = select.value; });
+menuBtn.addEventListener('click', ()=>controls.style.display='flex');
+closeControls.addEventListener('click', ()=>controls.style.display='none');
 
 captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
@@ -171,6 +189,7 @@ captureBtn.addEventListener('click', ()=>{
 });
 
 startCamera();
+detectGraphs();
 </script>
 </body>
 </html>
