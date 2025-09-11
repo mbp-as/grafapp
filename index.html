@@ -1,204 +1,86 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <title>Камера з графіками</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #111;
-      color: #fff;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden; /* забираємо скрол */
-    }
-
-    #top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 90%;
-      margin: 5px 0;
-    }
-
-    button {
-      padding: 6px 10px;
-      border: none;
-      border-radius: 8px;
-      background: #333;
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    button:hover {
-      background: #555;
-    }
-
-    #camera-container {
-      position: relative;
-      flex: 1;
-      width: 90%;
-      max-width: 500px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 12px;
-      transform: rotate(0deg);
-      transition: transform 0.3s ease;
-    }
-
-    #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      pointer-events: none;
-      display: flex;
-      justify-content: center;
-    }
-
-    #graph {
-      max-height: 30%;
-    }
-
-    #bottom-bar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      margin: 5px 0;
-    }
-
-    .arrow {
-      font-size: 20px;
-      background: #444;
-      padding: 6px 10px;
-      border-radius: 50%;
-    }
-
-    #capture-result {
-      margin-top: 5px;
-      max-width: 90%;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Камера з графікою</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    background: black;
+  }
+  #container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  video {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: rotate(0deg);
+  }
+  #overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    object-fit: contain;
+  }
+  #picker {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.8);
+    padding: 5px;
+    border-radius: 10px;
+  }
+  select {
+    font-size: 16px;
+  }
+</style>
 </head>
 <body>
-  <!-- Верхня панель -->
-  <div id="top-bar">
-    <button id="rotate">⟳</button>
-    <div>
-      <button id="shutter">📸</button>
-      <button id="clear">❌</button>
-    </div>
+<div id="container">
+  <video id="camera" autoplay playsinline></video>
+  <img id="overlay" src="graf1.png">
+  <div id="picker">
+    <select id="imageSelect">
+      <option value="graf1.png">Graf 1</option>
+      <option value="graf2.png">Graf 2</option>
+      <option value="graf3.png">Graf 3</option>
+      <option value="graf4.png">Graf 4</option>
+    </select>
   </div>
+</div>
 
-  <!-- Камера з накладанням графіка -->
-  <div id="camera-container">
-    <video id="camera" autoplay playsinline></video>
-    <div id="overlay">
-      <img id="graph" src="" alt="">
-    </div>
-  </div>
+<script>
+  const video = document.getElementById('camera');
+  const overlay = document.getElementById('overlay');
+  const select = document.getElementById('imageSelect');
 
-  <!-- Нижня панель (стрілки + номер графіка) -->
-  <div id="bottom-bar">
-    <button class="arrow" id="prev">◀</button>
-    <span id="graph-number">0</span>
-    <button class="arrow" id="next">▶</button>
-  </div>
+  // Запит на доступ до задньої камери
+  navigator.mediaDevices.getUserMedia({ 
+    video: { facingMode: { exact: "environment" } }, audio: false 
+  })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    console.error("Помилка доступу до камери:", err);
+  });
 
-  <!-- Результат фото -->
-  <canvas id="canvas" style="display:none;"></canvas>
-  <img id="capture-result" alt="">
-
-  <script>
-    const video = document.getElementById('camera');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const shutterBtn = document.getElementById('shutter');
-    const clearBtn = document.getElementById('clear');
-    const graphImg = document.getElementById('graph');
-    const prevBtn = document.getElementById('prev');
-    const nextBtn = document.getElementById('next');
-    const graphNumber = document.getElementById('graph-number');
-    const rotateBtn = document.getElementById('rotate');
-    const resultImg = document.getElementById('capture-result');
-
-    let currentGraph = 0;
-    let totalGraphs = 5; // змінюй під кількість своїх графіків
-    let rotation = 0;
-
-    // Відкрити камеру (задня за замовчуванням)
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(() => {
-        // якщо задня недоступна - відкриє будь-яку
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(stream => { video.srcObject = stream; });
-      });
-
-    // Перемикання графіків
-    function updateGraph() {
-      graphNumber.textContent = currentGraph;
-    }
-
-    prevBtn.addEventListener('click', () => {
-      currentGraph = (currentGraph - 1 + totalGraphs + 1) % (totalGraphs + 1);
-      updateGraph();
-    });
-
-    nextBtn.addEventListener('click', () => {
-      currentGraph = (currentGraph + 1) % (totalGraphs + 1);
-      updateGraph();
-    });
-
-    // Показати графік тільки після кліку на цифру
-    graphNumber.addEventListener('click', () => {
-      if (currentGraph > 0) {
-        graphImg.src = `graf${currentGraph}.png`;
-      }
-    });
-
-    // Очистити графік
-    clearBtn.addEventListener('click', () => {
-      graphImg.src = "";
-    });
-
-    // Зробити фото
-    shutterBtn.addEventListener('click', () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight + (graphImg.src ? graphImg.height : 0);
-
-      ctx.drawImage(video, 0, 0, canvas.width, video.videoHeight);
-
-      if (graphImg.src) {
-        ctx.drawImage(graphImg, 0, 0, canvas.width, graphImg.height);
-      }
-
-      // друге фото (без графіка) нижче
-      ctx.drawImage(video, 0, video.videoHeight, canvas.width, video.videoHeight);
-
-      resultImg.src = canvas.toDataURL("image/png");
-    });
-
-    // Поворот кадру
-    rotateBtn.addEventListener('click', () => {
-      rotation = (rotation + 90) % 360;
-      video.style.transform = `rotate(${rotation}deg)`;
-    });
-
-    updateGraph();
-  </script>
+  // Зміна накладного зображення
+  select.addEventListener('change', () => {
+    overlay.src = select.value;
+  });
+</script>
 </body>
 </html>
