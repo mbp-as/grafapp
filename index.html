@@ -67,11 +67,11 @@ video, #overlay {
 }
 #menuBtn img { width: 50%; height: 50%; }
 
-/* Кнопка arrow.svg над затвором */
+/* Кнопка наступного графа вправо */
 #nextGraphBtn {
   position: absolute;
   right: 15px;
-  top: calc(50% - 180px);
+  top: calc(50% - 200px);
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -86,7 +86,26 @@ video, #overlay {
 }
 #nextGraphBtn img { width: 50%; height: 50%; }
 
-/* Меню контролів - збільшене, трохи зміщене від краю */
+/* Кнопка графа вліво */
+#prevGraphBtn {
+  position: absolute;
+  right: 130px; /* віддалено від затвору */
+  top: calc(50% - 200px);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #007aff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#prevGraphBtn img { width: 50%; height: 50%; }
+
+/* Меню контролів */
 #controls {
   position: absolute;
   top: 50%;
@@ -138,6 +157,7 @@ video, #overlay {
   
   <div id="captureBtn"></div>
   <button id="nextGraphBtn"><img src="arrow.svg" alt="next"></button>
+  <button id="prevGraphBtn"><img src="arrow1.svg" alt="prev"></button>
   <button id="menuBtn"><img src="add.svg" alt="add"></button>
   
   <div id="controls">
@@ -165,6 +185,7 @@ const closeControls = document.getElementById('closeControls');
 const zoomInBtn = document.getElementById('zoomIn');
 const zoomOutBtn = document.getElementById('zoomOut');
 const nextGraphBtn = document.getElementById('nextGraphBtn');
+const prevGraphBtn = document.getElementById('prevGraphBtn');
 
 let currentFacing = 'environment';
 let videoRotation = 0;
@@ -185,7 +206,7 @@ async function startCamera() {
 }
 
 async function detectGraphs() {
-  const maxFiles = 20; 
+  const maxFiles = 16; // від 0 до 15
   for(let i=0; i<maxFiles; i++){
     const url = `graf${i}.png`;
     try {
@@ -211,6 +232,13 @@ closeControls.addEventListener('click', ()=>controls.style.display='none');
 nextGraphBtn.addEventListener('click', ()=>{
   if(graphs.length===0) return;
   graphIndex = (graphIndex+1)%graphs.length;
+  overlay.src = graphs[graphIndex];
+  select.value = overlay.src;
+});
+
+prevGraphBtn.addEventListener('click', ()=>{
+  if(graphs.length===0) return;
+  graphIndex = (graphIndex-1+graphs.length)%graphs.length;
   overlay.src = graphs[graphIndex];
   select.value = overlay.src;
 });
