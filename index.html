@@ -6,8 +6,9 @@
 <title>Камера з графікою</title>
 <style>
 html, body {
-  margin: 0; padding: 0; overflow: hidden; height: 100%; background: black; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  touch-action: manipulation; /* Забороняємо pinch zoom */
+  margin: 0; padding: 0; overflow: hidden; height: 100%; background: black;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  touch-action: manipulation;
   overscroll-behavior: none;
 }
 * {
@@ -34,57 +35,75 @@ video, #overlay {
   border-radius: 12px;
 }
 
-/* Кнопка камери iOS стиль */
+/* Кнопка затвору - в 2 рази більша */
 #captureBtn {
   position: absolute;
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  width: 120px;
-  height: 120px;
+  width: 240px;
+  height: 240px;
   border-radius: 50%;
   background: rgba(255,255,255,0.95);
   border: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.35);
   cursor: pointer;
   z-index: 20;
   transition: all 0.2s;
 }
-#captureBtn:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.3); }
+#captureBtn:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
 
-/* Кнопка плюс під кнопкою камери */
+/* Кнопка плюс під кнопкою затвору */
 #menuBtn {
   position: absolute;
   right: 15px;
-  top: calc(50% + 70px);
-  width: 60px;
-  height: 60px;
+  top: calc(50% + 140px);
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.95);
   border: none;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   cursor: pointer;
   z-index: 20;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 36px;
-  transition: all 0.2s;
+  font-size: 40px;
 }
-#menuBtn:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
+#menuBtn:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
 
-/* Меню контролів */
+/* Кнопка наступного графа */
+#nextGraphBtn {
+  position: absolute;
+  right: 270px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #007aff;
+  color: white;
+  font-size: 48px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 20;
+}
+#nextGraphBtn:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
+
+/* Меню контролів - переміщене ліворуч */
 #controls {
   position: absolute;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
   background: rgba(255,255,255,0.95);
-  padding: 25px 30px;
+  padding: 20px 25px;
   border-radius: 30px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
   align-items: center;
   display: none;
   z-index: 15;
@@ -93,20 +112,20 @@ video, #overlay {
 
 /* Селект та кнопки iOS стиль */
 #controls select, #controls button { 
-  font-size: 22px; padding: 12px 18px; border-radius: 18px; border: 1px solid #ccc; width: 220px; text-align: center;
-  background: #f2f2f7; /* світлий iOS фон */
+  font-size: 20px; padding: 10px 15px; border-radius: 18px; border: 1px solid #ccc; width: 200px; text-align: center;
+  background: #f2f2f7;
 }
 #controls select:focus, #controls button:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.3); }
 
 #closeControls { 
-  align-self: flex-end; font-size: 30px; cursor: pointer; margin-bottom: 5px;
+  align-self: flex-end; font-size: 28px; cursor: pointer; margin-bottom: 5px;
 }
 
-#zoomControls { display: flex; gap: 15px; }
+#zoomControls { display: flex; gap: 10px; }
 #zoomControls button {
-  width: 60px;
-  height: 60px;
-  font-size: 32px;
+  width: 50px;
+  height: 50px;
+  font-size: 28px;
   border-radius: 50%;
   border: none;
   background: #f2f2f7;
@@ -123,6 +142,7 @@ video, #overlay {
   <img id="overlay" src="graf0.png">
   
   <div id="captureBtn"></div>
+  <div id="nextGraphBtn">→</div>
   <div id="menuBtn">+</div>
   
   <div id="controls">
@@ -149,10 +169,13 @@ const controls = document.getElementById('controls');
 const closeControls = document.getElementById('closeControls');
 const zoomInBtn = document.getElementById('zoomIn');
 const zoomOutBtn = document.getElementById('zoomOut');
+const nextGraphBtn = document.getElementById('nextGraphBtn');
 
 let currentFacing = 'environment';
 let videoRotation = 0;
 let videoScale = 1;
+let graphIndex = 0;
+let graphs = [];
 
 function updateVideoTransform() {
   video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
@@ -168,7 +191,6 @@ async function startCamera() {
 
 async function detectGraphs() {
   const maxFiles = 20; 
-  let found = false;
   for(let i=0; i<maxFiles; i++){
     const url = `graf${i}.png`;
     try {
@@ -176,57 +198,44 @@ async function detectGraphs() {
       const opt = document.createElement('option');
       opt.value = url;
       opt.text = `Graf ${i}`;
-      if(i===0) opt.selected = true;
       select.appendChild(opt);
-      if(!found) { overlay.src = url; found = true; }
+      graphs.push(url);
+      if(i===0){ overlay.src = url; select.value = url; }
     } catch(e){ }
   }
 }
 
-switchCamBtn.addEventListener('click', ()=>{
-  currentFacing = currentFacing==='environment'?'user':'environment';
-  startCamera();
-});
-
-rotateCamBtn.addEventListener('click', ()=>{
-  videoRotation = (videoRotation + 90) % 360;
-  updateVideoTransform();
-});
-
-zoomInBtn.addEventListener('click', ()=>{
-  videoScale += 0.1;
-  updateVideoTransform();
-});
-
-zoomOutBtn.addEventListener('click', ()=>{
-  videoScale = Math.max(0.1, videoScale - 0.1);
-  updateVideoTransform();
-});
-
+switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='environment'?'user':'environment'; startCamera(); });
+rotateCamBtn.addEventListener('click', ()=>{ videoRotation = (videoRotation + 90) % 360; updateVideoTransform(); });
+zoomInBtn.addEventListener('click', ()=>{ videoScale += 0.1; updateVideoTransform(); });
+zoomOutBtn.addEventListener('click', ()=>{ videoScale = Math.max(0.1, videoScale - 0.1); updateVideoTransform(); });
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
 
+nextGraphBtn.addEventListener('click', ()=>{
+  if(graphs.length===0) return;
+  graphIndex = (graphIndex+1)%graphs.length;
+  overlay.src = graphs[graphIndex];
+  select.value = overlay.src;
+});
+
 captureBtn.addEventListener('click', async ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
-
   const overlayImg = new Image();
   overlayImg.src = overlay.src;
   await overlayImg.decode();
-
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(vh, overlayImg.width);
   canvas.height = overlayImg.height + vw;
   const ctx = canvas.getContext('2d');
-
   ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
   ctx.save();
   ctx.translate(0, overlayImg.height + vw);
   ctx.rotate(-Math.PI/2);
   ctx.drawImage(video, 0, 0, vw, vh);
   ctx.restore();
-
   const imgData = canvas.toDataURL('image/png');
   const a = document.createElement('a');
   a.href = imgData;
