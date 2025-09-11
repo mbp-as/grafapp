@@ -2,137 +2,113 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
+  <title>Camera Overlay App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Камера з графіком</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      background: #000;
-    }
-    .top-bar {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px 10px;
-      background: rgba(0,0,0,0.6);
-    }
-    .top-bar button {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    #chartContainer {
-      width: 100%;
-      height: 25%;
-      background: #111;
-    }
-    #camera-container {
-      position: relative;
-      flex: 1;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    video {
-      max-width: 100%;
-      max-height: 100%;
-      transform-origin: center;
-    }
-    .controls {
-      position: absolute;
-      bottom: 10px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      width: 100%;
-    }
-    .controls button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.8);
-    }
+    body { margin:0; font-family:sans-serif; background:#000; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .app { background:#fff; border-radius:20px; display:flex; overflow:hidden; width:100%; max-width:1000px; height:520px; }
+    .viewfinder { flex:1; position:relative; background:#000; }
+    video, canvas { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
+    .panel { width:300px; background:#fff; display:flex; flex-direction:column; padding:16px; gap:12px; }
+    .controls { display:flex; justify-content:space-between; align-items:center; }
+    .btn { border:none; cursor:pointer; }
+    .circle { width:40px; height:40px; border-radius:50%; background:#3b82f6; color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center; }
+    .number { width:60px; height:60px; border-radius:12px; background:#f3f3f3; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:20px; cursor:pointer; }
+    .preview { flex:1; display:flex; align-items:center; justify-content:center; background:#e5e5e5; border-radius:12px; overflow:hidden; }
+    .action { padding:12px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; }
+    .shutter { background:#fee2e2; color:#ef4444; }
+    .clear { background:#fdf2f8; color:#db2777; }
+    .note { font-size:12px; color:#666; text-align:center; }
   </style>
 </head>
 <body>
-  <div class="top-bar">
-    <button id="rotateBtn">🔄</button>
-    <div>
-      <button id="captureBtn">📸</button>
-      <button id="clearBtn">🗑️</button>
+  <div class="app">
+    <div class="viewfinder">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="panel">
+      <div class="controls">
+        <button id="prev" class="btn circle">◀</button>
+        <div id="number" class="number">1</div>
+        <button id="next" class="btn circle">▶</button>
+      </div>
+      <div class="preview">
+        <img id="previewImg" style="max-width:100%; max-height:100%; display:none;">
+        <span id="previewText">Графік: graf1.png</span>
+      </div>
+      <button id="shutter" class="action shutter">📸 Затвор</button>
+      <button id="clear" class="action clear">Очистити графік</button>
+      <div class="note">Після зміни номера графік не з'явиться, доки не натиснете на блок з цифрою.</div>
     </div>
   </div>
 
-  <div id="chartContainer">
-    <canvas id="myChart"></canvas>
-  </div>
-
-  <div id="camera-container">
-    <video id="video" autoplay playsinline></video>
-  </div>
-
   <script>
-    // Ініціалізація графіка
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ["1","2","3","4","5"],
-        datasets: [{
-          label: 'Приклад',
-          data: [12, 19, 3, 5, 2],
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 2,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { x: { display: false }, y: { display: false } }
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const previewImg = document.getElementById("previewImg");
+    const previewText = document.getElementById("previewText");
+    const numberBlock = document.getElementById("number");
+
+    let index = 1;
+    const grafCount = 4; // скільки є graf?.png
+    let overlayVisible = false;
+    let overlayImg = null;
+
+    // запуск камери
+    navigator.mediaDevices.getUserMedia({ video:{ facingMode:"environment" }, audio:false })
+      .then(stream => { video.srcObject = stream; })
+      .catch(e => console.error(e));
+
+    // малювання відео + накладки
+    function draw() {
+      if (video.videoWidth) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (overlayVisible && overlayImg) {
+          ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
+        }
       }
-    });
+      requestAnimationFrame(draw);
+    }
+    draw();
 
-    // Камера
-    const video = document.getElementById('video');
-    let rotation = 0;
+    function loadOverlay() {
+      const img = new Image();
+      img.src = `graf${index}.png`;
+      img.onload = () => { overlayImg = img; previewImg.src = img.src; previewImg.style.display="block"; previewText.style.display="none"; };
+      img.onerror = () => { overlayImg=null; previewImg.style.display="none"; previewText.style.display="block"; previewText.textContent = `Графік: graf${index}.png`; };
+    }
+    loadOverlay();
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        console.error("Помилка доступу до камери:", err);
+    document.getElementById("prev").onclick = () => { index = index<=1?grafCount:index-1; numberBlock.textContent=index; loadOverlay(); };
+    document.getElementById("next").onclick = () => { index = index>=grafCount?1:index+1; numberBlock.textContent=index; loadOverlay(); };
+
+    numberBlock.onclick = () => { overlayVisible=!overlayVisible; };
+    document.getElementById("clear").onclick = () => { overlayVisible=false; };
+
+    document.getElementById("shutter").onclick = () => {
+      const w = video.videoWidth || 640, h = video.videoHeight || 480;
+      const tmp = document.createElement("canvas");
+      tmp.width = w; tmp.height = h*2;
+      const tctx = tmp.getContext("2d");
+
+      // з накладкою
+      tctx.drawImage(video, 0, 0, w, h);
+      if (overlayImg) tctx.drawImage(overlayImg, 0, 0, w, h);
+
+      // без накладки
+      tctx.drawImage(video, 0, h, w, h);
+
+      tmp.toBlob(blob=>{
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href=url; a.download=`photo_graf${index}.png`; a.click();
+        URL.revokeObjectURL(url);
       });
-
-    document.getElementById('captureBtn').addEventListener('click', () => {
-      alert("Фото збережене (приклад)");
-    });
-
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      alert("Очищено (приклад)");
-    });
-
-    document.getElementById('rotateBtn').addEventListener('click', () => {
-      rotation = (rotation + 90) % 360;
-      video.style.transform = `rotate(${rotation}deg)`;
-    });
+    };
   </script>
 </body>
 </html>
