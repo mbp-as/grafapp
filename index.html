@@ -8,14 +8,73 @@
 html, body {
   margin: 0; padding: 0; overflow: hidden; height: 100%; background: black;
 }
-#container { position: relative; width: 100%; height: 100%; }
-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: rotate(0deg); }
-#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; object-fit: contain; }
-#captureBtn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.9); border: 2px solid #ccc; cursor: pointer; z-index: 20; }
-#menuBtn { position: absolute; left: 15px; bottom: 15px; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.9); border: 2px solid #ccc; display: flex; justify-content: center; align-items: center; font-size: 30px; cursor: pointer; z-index: 20; }
-#controls { position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 15px 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; display: none; z-index: 15; }
-#controls select, #controls button { font-size: 18px; padding: 8px 12px; border-radius: 12px; border: 1px solid #aaa; width: 160px; text-align: center; }
-#closeControls { align-self: flex-end; font-size: 24px; cursor: pointer; margin-bottom: 5px; }
+#container {
+  position: absolute;
+  width: 100vh;  /* висота екрану стає шириною */
+  height: 100vw; /* ширина екрану стає висотою */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center center;
+}
+video, #overlay {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#captureBtn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  border: 2px solid #ccc;
+  cursor: pointer;
+  z-index: 20;
+}
+#menuBtn {
+  position: absolute;
+  left: 15px;
+  bottom: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  border: 2px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 20;
+}
+#controls {
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.9);
+  padding: 15px 20px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  display: none;
+  z-index: 15;
+}
+#controls select, #controls button { 
+  font-size: 18px; padding: 8px 12px; border-radius: 12px; border: 1px solid #aaa; width: 160px; text-align: center;
+}
+#closeControls { 
+  align-self: flex-end; font-size: 24px; cursor: pointer; margin-bottom: 5px;
+}
 </style>
 </head>
 <body>
@@ -66,24 +125,24 @@ async function startCamera() {
 }
 
 switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='environment'?'user':'environment'; startCamera(); });
-rotateCamBtn.addEventListener('click', ()=>{ videoRotation=(videoRotation+90)%360; video.style.transform=`rotate(${videoRotation}deg)`; });
+rotateCamBtn.addEventListener('click', ()=>{ videoRotation=(videoRotation+90)%360; video.style.transform=`rotate(${videoRotation+90}deg)`; });
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
 
 // Відкриття/закриття меню
 menuBtn.addEventListener('click', ()=>controls.style.display='flex');
 closeControls.addEventListener('click', ()=>controls.style.display='none');
 
-// Захоплення фото (об’єднане, з правильним масштабом)
+// Захоплення фото (об’єднане, правильне масштабування)
 captureBtn.addEventListener('click', ()=>{
   const vw = video.videoWidth;
   const vh = video.videoHeight;
 
   const canvas = document.createElement('canvas');
-  canvas.width = vw*2; // два кадри поруч
+  canvas.width = vw*2;
   canvas.height = vh;
   const ctx = canvas.getContext('2d');
 
-  // Масштаб для overlay
+  // Масштаб overlay
   const videoRect = video.getBoundingClientRect();
   const overlayRect = overlay.getBoundingClientRect();
   const scaleX = vw / videoRect.width;
@@ -99,7 +158,7 @@ captureBtn.addEventListener('click', ()=>{
     (overlayRect.left - videoRect.left)*scaleX,
     (overlayRect.top - videoRect.top)*scaleY,
     overlayRect.width*scaleX,
-    overlayRect.height*scaleY + 0.01 // корекція дрібна для точності
+    overlayRect.height*scaleY
   );
 
   const combinedImg = canvas.toDataURL('image/png');
