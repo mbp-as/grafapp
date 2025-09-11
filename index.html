@@ -2,113 +2,204 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Camera Overlay App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Камера з графіками</title>
   <style>
-    body { margin:0; font-family:sans-serif; background:#000; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-    .app { background:#fff; border-radius:20px; display:flex; overflow:hidden; width:100%; max-width:1000px; height:520px; }
-    .viewfinder { flex:1; position:relative; background:#000; }
-    video, canvas { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
-    .panel { width:300px; background:#fff; display:flex; flex-direction:column; padding:16px; gap:12px; }
-    .controls { display:flex; justify-content:space-between; align-items:center; }
-    .btn { border:none; cursor:pointer; }
-    .circle { width:40px; height:40px; border-radius:50%; background:#3b82f6; color:#fff; font-size:18px; display:flex; align-items:center; justify-content:center; }
-    .number { width:60px; height:60px; border-radius:12px; background:#f3f3f3; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:20px; cursor:pointer; }
-    .preview { flex:1; display:flex; align-items:center; justify-content:center; background:#e5e5e5; border-radius:12px; overflow:hidden; }
-    .action { padding:12px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; }
-    .shutter { background:#fee2e2; color:#ef4444; }
-    .clear { background:#fdf2f8; color:#db2777; }
-    .note { font-size:12px; color:#666; text-align:center; }
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden; /* щоб не було скролу */
+      font-family: sans-serif;
+    }
+
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 90%;
+      margin: 10px 0;
+    }
+
+    #controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    #camera-container {
+      position: relative;
+      flex: 1;
+      width: 90%;
+      max-width: 500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      transform: rotate(0deg);
+      transition: transform 0.3s ease;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    #graph {
+      display: block;
+      margin: 0 auto;
+      max-height: 25%;
+    }
+
+    #bottom-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin: 10px 0;
+    }
+
+    .arrow {
+      font-size: 20px;
+      background: #444;
+      padding: 6px 10px;
+      border-radius: 50%;
+    }
+
+    #capture-result {
+      margin-top: 10px;
+      max-width: 90%;
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="viewfinder">
-      <video id="video" autoplay playsinline muted></video>
-      <canvas id="canvas"></canvas>
-    </div>
-    <div class="panel">
-      <div class="controls">
-        <button id="prev" class="btn circle">◀</button>
-        <div id="number" class="number">1</div>
-        <button id="next" class="btn circle">▶</button>
-      </div>
-      <div class="preview">
-        <img id="previewImg" style="max-width:100%; max-height:100%; display:none;">
-        <span id="previewText">Графік: graf1.png</span>
-      </div>
-      <button id="shutter" class="action shutter">📸 Затвор</button>
-      <button id="clear" class="action clear">Очистити графік</button>
-      <div class="note">Після зміни номера графік не з'явиться, доки не натиснете на блок з цифрою.</div>
+  <!-- Верхня панель -->
+  <div id="top-bar">
+    <button id="rotate">⟳</button>
+    <div id="controls">
+      <button id="shutter">📸 Затвор</button>
+      <button id="clear">❌ Очистити</button>
     </div>
   </div>
 
+  <!-- Камера з накладанням графіка -->
+  <div id="camera-container">
+    <video id="camera" autoplay playsinline></video>
+    <div id="overlay">
+      <img id="graph" src="" alt="">
+    </div>
+  </div>
+
+  <!-- Нижня панель (стрілки + номер графіка) -->
+  <div id="bottom-bar">
+    <button class="arrow" id="prev">◀</button>
+    <span id="graph-number">0</span>
+    <button class="arrow" id="next">▶</button>
+  </div>
+
+  <!-- Результат фото -->
+  <canvas id="canvas" style="display:none;"></canvas>
+  <img id="capture-result" alt="">
+
   <script>
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const previewImg = document.getElementById("previewImg");
-    const previewText = document.getElementById("previewText");
-    const numberBlock = document.getElementById("number");
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const shutterBtn = document.getElementById('shutter');
+    const clearBtn = document.getElementById('clear');
+    const graphImg = document.getElementById('graph');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const graphNumber = document.getElementById('graph-number');
+    const rotateBtn = document.getElementById('rotate');
+    const resultImg = document.getElementById('capture-result');
 
-    let index = 1;
-    const grafCount = 4; // скільки є graf?.png
-    let overlayVisible = false;
-    let overlayImg = null;
+    let currentGraph = 0;
+    let totalGraphs = 5; // кількість графіків (змінюй під себе)
+    let rotation = 0;
 
-    // запуск камери
-    navigator.mediaDevices.getUserMedia({ video:{ facingMode:"environment" }, audio:false })
-      .then(stream => { video.srcObject = stream; })
-      .catch(e => console.error(e));
-
-    // малювання відео + накладки
-    function draw() {
-      if (video.videoWidth) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        if (overlayVisible && overlayImg) {
-          ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
-        }
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
-
-    function loadOverlay() {
-      const img = new Image();
-      img.src = `graf${index}.png`;
-      img.onload = () => { overlayImg = img; previewImg.src = img.src; previewImg.style.display="block"; previewText.style.display="none"; };
-      img.onerror = () => { overlayImg=null; previewImg.style.display="none"; previewText.style.display="block"; previewText.textContent = `Графік: graf${index}.png`; };
-    }
-    loadOverlay();
-
-    document.getElementById("prev").onclick = () => { index = index<=1?grafCount:index-1; numberBlock.textContent=index; loadOverlay(); };
-    document.getElementById("next").onclick = () => { index = index>=grafCount?1:index+1; numberBlock.textContent=index; loadOverlay(); };
-
-    numberBlock.onclick = () => { overlayVisible=!overlayVisible; };
-    document.getElementById("clear").onclick = () => { overlayVisible=false; };
-
-    document.getElementById("shutter").onclick = () => {
-      const w = video.videoWidth || 640, h = video.videoHeight || 480;
-      const tmp = document.createElement("canvas");
-      tmp.width = w; tmp.height = h*2;
-      const tctx = tmp.getContext("2d");
-
-      // з накладкою
-      tctx.drawImage(video, 0, 0, w, h);
-      if (overlayImg) tctx.drawImage(overlayImg, 0, 0, w, h);
-
-      // без накладки
-      tctx.drawImage(video, 0, h, w, h);
-
-      tmp.toBlob(blob=>{
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href=url; a.download=`photo_graf${index}.png`; a.click();
-        URL.revokeObjectURL(url);
+    // Відкрити камеру
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
       });
-    };
+
+    // Перемикання графіків
+    function updateGraph() {
+      graphNumber.textContent = currentGraph;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      currentGraph = (currentGraph - 1 + totalGraphs + 1) % (totalGraphs + 1);
+      updateGraph();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentGraph = (currentGraph + 1) % (totalGraphs + 1);
+      updateGraph();
+    });
+
+    // Показати графік тільки після кліку на цифру
+    graphNumber.addEventListener('click', () => {
+      if (currentGraph > 0) {
+        graphImg.src = `graf${currentGraph}.png`;
+      }
+    });
+
+    // Очистити графік
+    clearBtn.addEventListener('click', () => {
+      graphImg.src = "";
+    });
+
+    // Зробити фото
+    shutterBtn.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight + (graphImg.src ? graphImg.height : 0);
+
+      ctx.drawImage(video, 0, 0, canvas.width, video.videoHeight);
+
+      if (graphImg.src) {
+        ctx.drawImage(graphImg, 0, 0, canvas.width, graphImg.height);
+      }
+
+      // друге фото (без графіка) нижче
+      ctx.drawImage(video, 0, video.videoHeight, canvas.width, video.videoHeight);
+
+      resultImg.src = canvas.toDataURL("image/png");
+    });
+
+    // Поворот кадру
+    rotateBtn.addEventListener('click', () => {
+      rotation = (rotation + 90) % 360;
+      video.style.transform = `rotate(${rotation}deg)`;
+    });
+
+    updateGraph();
   </script>
 </body>
 </html>
