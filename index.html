@@ -13,6 +13,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  touch-action: none; /* блокуємо пінч і подвійний дотик */
 }
 #camera-container {
   position: relative;
@@ -236,6 +237,13 @@ leftArrow.addEventListener('click', ()=>{
   graphOverlay.src = `graf${graphIndex}.png`;
   graphSelect.value = graphOverlay.src;
 });
+
+// Блокування масштабування жестами
+document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+document.addEventListener('touchmove', function(e) {
+  if(e.scale !== undefined && e.scale !== 1) e.preventDefault();
+}, { passive: false });
+document.addEventListener('dblclick', function(e) { e.preventDefault(); });
 </script>
 </body>
 </html>
