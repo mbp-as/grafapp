@@ -13,7 +13,6 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  transform-origin: center center;
 }
 #camera-container {
   position: relative;
@@ -36,25 +35,24 @@ video {
   pointer-events: none;
   object-fit: contain;
 }
-/* Кнопка затвору */
-#shutter {
+/* Панель під кнопки камери */
+#button-panel {
   position: absolute;
-  bottom: 30px;
-  right: 30px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 4px solid white;
-  background: white;
-  cursor: pointer;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 20px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 }
-/* Стрілки перемикання графіків */
-#left-arrow, #right-arrow, #flip-btn, #lens-btn {
-  position: absolute;
-  bottom: 130px;
-  width: 55px;
-  height: 55px;
-  border-radius: 15px;
+/* Кнопки */
+#button-panel button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   border: none;
   background: white;
   display: flex;
@@ -62,11 +60,10 @@ video {
   align-items: center;
   cursor: pointer;
 }
-#left-arrow img, #right-arrow img { width: 28px; height: 28px; }
-#left-arrow { right: 100px; }
-#right-arrow { right: 30px; }
-#flip-btn { right: 30px; bottom: 200px; }
-#lens-btn { right: 100px; bottom: 200px; }
+#button-panel button img {
+  width: 28px;
+  height: 28px;
+}
 /* Кнопка меню */
 #settings-btn {
   position: absolute;
@@ -128,12 +125,14 @@ canvas { display: none; }
     </div>
   </div>
 
-  <!-- Кнопки справа -->
-  <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
-  <button id="right-arrow"><img src="arror.svg" alt="→"></button>
-  <button id="shutter"></button>
-  <button id="flip-btn">↺</button>
-  <button id="lens-btn">1×</button>
+  <!-- Панель кнопок камери справа -->
+  <div id="button-panel">
+    <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
+    <button id="right-arrow"><img src="arror.svg" alt="→"></button>
+    <button id="shutter"></button>
+    <button id="flip-btn">↺</button>
+    <button id="lens-btn">1×</button>
+  </div>
 </div>
 <canvas id="canvas"></canvas>
 
@@ -179,7 +178,6 @@ for(let i=0;i<=maxGraphs;i++){
 }
 
 settingsBtn.addEventListener('click', ()=>controls.style.display = controls.style.display==='flex'?'none':'flex');
-
 graphSelect.addEventListener('change', ()=>graphOverlay.src = graphSelect.value);
 
 // Меню налаштувань кнопки
