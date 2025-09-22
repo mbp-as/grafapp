@@ -130,9 +130,8 @@ canvas { display: none; }
   <div id="button-panel">
     <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
     <button id="right-arrow"><img src="arror.svg" alt="→"></button>
-    <button id="shutter"></button>
-    <button id="flip-btn">↺</button>
-    <button id="lens-btn">1×</button>
+    <button id="shutter"><img src="camera.svg" alt="Зйомка"></button>
+    <button id="lens-btn"><img src="1x.svg" alt="1×"></button>
   </div>
 </div>
 <canvas id="canvas"></canvas>
@@ -151,7 +150,6 @@ const flipCamBtn = document.getElementById('flipCam');
 const rotateCamBtn = document.getElementById('rotateCam');
 const zoomInBtn = document.getElementById('zoomIn');
 const zoomOutBtn = document.getElementById('zoomOut');
-const flipBtn = document.getElementById('flip-btn');
 const lensBtn = document.getElementById('lens-btn');
 
 let graphIndex = 0;
@@ -159,9 +157,10 @@ const maxGraphs = 15;
 let videoScale = 1;
 let currentFacing = 'environment';
 let videoRotation = 0;
-let lensOptions = [0.5, 1, 2];
+let lensOptions = ['05.svg','1x.svg','2x.svg'];
 let lensIndex = 1; // старт з 1×
 
+// Старт камери
 async function startCamera() {
   if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
   try {
@@ -171,6 +170,7 @@ async function startCamera() {
 }
 startCamera();
 
+// Заповнюємо select графіки
 for(let i=0;i<=maxGraphs;i++){
   const opt = document.createElement('option');
   opt.value = `graf${i}.png`;
@@ -178,10 +178,10 @@ for(let i=0;i<=maxGraphs;i++){
   graphSelect.appendChild(opt);
 }
 
+// Меню налаштувань
 settingsBtn.addEventListener('click', ()=>controls.style.display = controls.style.display==='flex'?'none':'flex');
 graphSelect.addEventListener('change', ()=>graphOverlay.src = graphSelect.value);
 
-// Меню налаштувань кнопки
 flipCamBtn.addEventListener('click', ()=>{
   currentFacing = currentFacing==='environment'?'user':'environment';
   startCamera();
@@ -201,15 +201,10 @@ zoomOutBtn.addEventListener('click', ()=>{
   video.style.transform = `scale(${videoScale}) rotate(${videoRotation}deg)`;
 });
 
-// Об'єктиви
+// Об’єктиви
 lensBtn.addEventListener('click', ()=>{
   lensIndex = (lensIndex +1) % lensOptions.length;
-  const track = video.srcObject.getVideoTracks()[0];
-  const capabilities = track.getCapabilities();
-  if(capabilities.zoom) {
-    track.applyConstraints({ advanced:[{zoom:lensOptions[lensIndex]}] });
-  }
-  lensBtn.textContent = lensOptions[lensIndex]+"×";
+  lensBtn.firstElementChild.src = lensOptions[lensIndex];
 });
 
 // Зйомка
