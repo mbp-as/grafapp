@@ -157,8 +157,8 @@ const maxGraphs = 15;
 let videoScale = 1;
 let currentFacing = 'environment';
 let videoRotation = 0;
-let lensOptions = ['05.svg','1x.svg','2x.svg'];
-let lensIndex = 1; // старт з 1×
+const lensIcons = ['05.svg','1x.svg','2x.svg'];
+let lensIndex = 1;
 
 // Старт камери
 async function startCamera() {
@@ -201,10 +201,17 @@ zoomOutBtn.addEventListener('click', ()=>{
   video.style.transform = `scale(${videoScale}) rotate(${videoRotation}deg)`;
 });
 
-// Об’єктиви
-lensBtn.addEventListener('click', ()=>{
-  lensIndex = (lensIndex +1) % lensOptions.length;
-  lensBtn.firstElementChild.src = lensOptions[lensIndex];
+// Об’єктиви — реальний зум, якщо підтримує камера
+lensBtn.addEventListener('click', async ()=>{
+  const track = video.srcObject.getVideoTracks()[0];
+  const capabilities = track.getCapabilities();
+  lensIndex = (lensIndex + 1) % lensIcons.length;
+  lensBtn.firstElementChild.src = lensIcons[lensIndex];
+  if(capabilities.zoom) {
+    try {
+      await track.applyConstraints({ advanced: [{ zoom: [0.5,1,2][lensIndex] }] });
+    } catch(e) { console.warn("Zoom не підтримується", e); }
+  }
 });
 
 // Зйомка
