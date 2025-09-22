@@ -41,7 +41,7 @@ video {
 #shutter {
   position: absolute;
   bottom: 30px;
-  left: 30px;
+  right: 30px;
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -65,8 +65,8 @@ video {
   cursor: pointer;
 }
 #left-arrow img, #right-arrow img { width: 28px; height: 28px; }
-#left-arrow { left: 30px; }
-#right-arrow { left: 100px; }
+#left-arrow { right: 100px; }
+#right-arrow { right: 30px; }
 /* Кнопка меню */
 #settings-btn {
   position: absolute;
@@ -131,11 +131,9 @@ canvas { display: none; }
     </div>
   </div>
 
-  <!-- Кнопки перемикання графіків -->
+  <!-- Кнопки перемикання графіків та затвору справа -->
   <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
   <button id="right-arrow"><img src="arror.svg" alt="→"></button>
-
-  <!-- Кнопка затвору -->
   <button id="shutter"></button>
 </div>
 <canvas id="canvas"></canvas>
