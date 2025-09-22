@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1">
-<title>Камера з графікою</title>
+<title>Камера</title>
 <style>
 html, body {
   margin: 0; padding: 0; overflow: hidden; height: 100%; background: black;
@@ -11,157 +11,102 @@ html, body {
   touch-action: manipulation;
   overscroll-behavior: none;
 }
-* { touch-action: manipulation; }
 #container {
   position: absolute;
-  width: 100vh;  
-  height: 100vw; 
-  top: 50%;
-  left: 50%;
+  width: 100vh;
+  height: 100vw;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center center;
 }
 video, #overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(1);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
   height: 100%;
   width: auto;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: 10px;
 }
-
-/* Кнопка затвору - велика */
 #captureBtn {
   position: absolute;
-  right: 15px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  width: 240px;
-  height: 240px;
+  width: 160px; height: 160px;
   border-radius: 50%;
   background: rgba(255,255,255,0.95);
   border: none;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.35);
   cursor: pointer;
   z-index: 20;
 }
-
-/* Кнопка add.svg під затвором */
 #menuBtn {
   position: absolute;
-  right: 15px;
-  top: calc(50% + 140px);
-  width: 80px;
-  height: 80px;
+  right: 10px;
+  top: calc(50% + 110px);
+  width: 60px; height: 60px;
   border-radius: 50%;
   background: rgba(255,255,255,0.95);
   border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  cursor: pointer;
-  z-index: 20;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; align-items: center; justify-content: center;
 }
 #menuBtn img { width: 50%; height: 50%; }
-
-/* Кнопка наступного графа вправо */
-#nextGraphBtn {
+#nextGraphBtn, #prevGraphBtn {
   position: absolute;
-  right: 15px;
-  top: calc(50% - 200px);
-  width: 100px;
-  height: 100px;
+  top: calc(50% - 150px);
+  width: 70px; height: 70px;
   border-radius: 50%;
   background: #007aff;
   border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   cursor: pointer;
-  z-index: 20;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; align-items: center; justify-content: center;
 }
-#nextGraphBtn img { width: 50%; height: 50%; }
+#nextGraphBtn { right: 10px; }
+#prevGraphBtn { right: 90px; }
+#nextGraphBtn img, #prevGraphBtn img { width: 50%; height: 50%; }
 
-/* Кнопка графа вліво */
-#prevGraphBtn {
-  position: absolute;
-  right: 130px; /* віддалено від затвору */
-  top: calc(50% - 200px);
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #007aff;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  cursor: pointer;
-  z-index: 20;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#prevGraphBtn img { width: 50%; height: 50%; }
-
-/* Меню контролів */
 #controls {
   position: absolute;
-  top: 50%;
-  left: 25px;
+  top: 50%; left: 15px;
   transform: translateY(-50%);
   background: rgba(255,255,255,0.95);
-  padding: 40px 50px;
-  border-radius: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
+  padding: 20px;
+  border-radius: 20px;
   display: none;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
   z-index: 15;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  width: 400px;
+  width: 260px;
 }
-
-/* Селект та кнопки iOS стиль */
-#controls select, #controls button { 
-  font-size: 22px; padding: 15px 20px; border-radius: 18px; border: 1px solid #ccc; width: 100%; text-align: center;
+#controls select, #controls button {
+  font-size: 16px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  width: 100%;
   background: #f2f2f7;
 }
-#controls select:focus, #controls button:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.3); }
-
-#closeControls { align-self: flex-end; font-size: 28px; cursor: pointer; margin-bottom: 5px; }
-
-#zoomControls { display: flex; gap: 15px; }
+#zoomControls { display: flex; gap: 8px; }
 #zoomControls button {
-  width: 60px;
-  height: 60px;
-  font-size: 32px;
+  width: 40px; height: 40px;
+  font-size: 20px;
   border-radius: 50%;
   border: none;
   background: #f2f2f7;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
-#zoomControls button:hover { box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
 <div id="container">
   <video id="camera" autoplay playsinline></video>
   <img id="overlay" src="graf0.png">
-  
+
   <div id="captureBtn"></div>
   <button id="nextGraphBtn"><img src="arrow.svg" alt="next"></button>
   <button id="prevGraphBtn"><img src="arrow1.svg" alt="prev"></button>
   <button id="menuBtn"><img src="add.svg" alt="add"></button>
-  
+
   <div id="controls">
-    <div id="closeControls">✕</div>
     <select id="imageSelect"></select>
     <button id="switchCam">Перевернути камеру</button>
     <button id="rotateCam">Повернути відео</button>
@@ -181,7 +126,6 @@ const rotateCamBtn = document.getElementById('rotateCam');
 const captureBtn = document.getElementById('captureBtn');
 const menuBtn = document.getElementById('menuBtn');
 const controls = document.getElementById('controls');
-const closeControls = document.getElementById('closeControls');
 const zoomInBtn = document.getElementById('zoomIn');
 const zoomOutBtn = document.getElementById('zoomOut');
 const nextGraphBtn = document.getElementById('nextGraphBtn');
@@ -206,7 +150,7 @@ async function startCamera() {
 }
 
 async function detectGraphs() {
-  const maxFiles = 16; // від 0 до 15
+  const maxFiles = 16;
   for(let i=0; i<maxFiles; i++){
     const url = `graf${i}.png`;
     try {
@@ -217,17 +161,16 @@ async function detectGraphs() {
       select.appendChild(opt);
       graphs.push(url);
       if(i===0){ overlay.src = url; select.value = url; }
-    } catch(e){ }
+    } catch(e){}
   }
 }
 
 switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='environment'?'user':'environment'; startCamera(); });
-rotateCamBtn.addEventListener('click', ()=>{ videoRotation = (videoRotation + 90) % 360; updateVideoTransform(); });
+rotateCamBtn.addEventListener('click', ()=>{ videoRotation = (videoRotation+90)%360; updateVideoTransform(); });
 zoomInBtn.addEventListener('click', ()=>{ videoScale += 0.1; updateVideoTransform(); });
-zoomOutBtn.addEventListener('click', ()=>{ videoScale = Math.max(0.1, videoScale - 0.1); updateVideoTransform(); });
+zoomOutBtn.addEventListener('click', ()=>{ videoScale = Math.max(0.1, videoScale-0.1); updateVideoTransform(); });
 select.addEventListener('change', ()=>{ overlay.src = select.value; });
-menuBtn.addEventListener('click', ()=>controls.style.display='flex');
-closeControls.addEventListener('click', ()=>controls.style.display='none');
+menuBtn.addEventListener('click', ()=> controls.style.display = controls.style.display==='flex'?'none':'flex');
 
 nextGraphBtn.addEventListener('click', ()=>{
   if(graphs.length===0) return;
@@ -235,7 +178,6 @@ nextGraphBtn.addEventListener('click', ()=>{
   overlay.src = graphs[graphIndex];
   select.value = overlay.src;
 });
-
 prevGraphBtn.addEventListener('click', ()=>{
   if(graphs.length===0) return;
   graphIndex = (graphIndex-1+graphs.length)%graphs.length;
@@ -243,22 +185,12 @@ prevGraphBtn.addEventListener('click', ()=>{
   select.value = overlay.src;
 });
 
-captureBtn.addEventListener('click', async ()=>{
-  const vw = video.videoWidth;
-  const vh = video.videoHeight;
-  const overlayImg = new Image();
-  overlayImg.src = overlay.src;
-  await overlayImg.decode();
+captureBtn.addEventListener('click', ()=>{
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(vh, overlayImg.width);
-  canvas.height = overlayImg.height + vw;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(overlayImg, 0, 0, canvas.width, overlayImg.height);
-  ctx.save();
-  ctx.translate(0, overlayImg.height + vw);
-  ctx.rotate(-Math.PI/2);
-  ctx.drawImage(video, 0, 0, vw, vh);
-  ctx.restore();
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const imgData = canvas.toDataURL('image/png');
   const a = document.createElement('a');
   a.href = imgData;
