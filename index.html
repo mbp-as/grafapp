@@ -13,7 +13,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  touch-action: none; /* блокуємо пінч і подвійний дотик */
+  touch-action: none;
 }
 #camera-container {
   position: relative;
@@ -48,6 +48,7 @@ video {
   flex-direction: column;
   gap: 10px;
   align-items: center;
+  cursor: grab;
 }
 /* Кнопки */
 #button-panel button {
@@ -64,6 +65,12 @@ video {
 #button-panel button img {
   width: 28px;
   height: 28px;
+}
+/* Панель перетягування (вгорі кнопок) */
+#drag-handle {
+  width: 100%;
+  height: 20px;
+  cursor: grab;
 }
 /* Кнопка меню */
 #settings-btn {
@@ -128,6 +135,7 @@ canvas { display: none; }
 
   <!-- Панель кнопок камери справа -->
   <div id="button-panel">
+    <div id="drag-handle"></div>
     <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
     <button id="right-arrow"><img src="arror.svg" alt="→"></button>
     <button id="shutter"><img src="camera.svg" alt="Зйомка"></button>
@@ -246,6 +254,31 @@ document.addEventListener('touchmove', function(e) {
   if(e.scale !== undefined && e.scale !== 1) e.preventDefault();
 }, { passive: false });
 document.addEventListener('dblclick', function(e) { e.preventDefault(); });
+
+// Перетягування панелі
+const panel = document.getElementById('button-panel');
+const handle = document.getElementById('drag-handle');
+let offsetX, offsetY, dragging=false;
+
+handle.addEventListener('pointerdown', e=>{
+  dragging=true;
+  offsetX = e.clientX - panel.offsetLeft;
+  offsetY = e.clientY - panel.offsetTop;
+  handle.setPointerCapture(e.pointerId);
+});
+
+handle.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  panel.style.left = (e.clientX - offsetX) + 'px';
+  panel.style.top = (e.clientY - offsetY) + 'px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+});
+
+handle.addEventListener('pointerup', e=>{
+  dragging=false;
+  handle.releasePointerCapture(e.pointerId);
+});
 </script>
 </body>
 </html>
