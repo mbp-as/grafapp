@@ -1,202 +1,176 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1">
-<title>Камера</title>
-<style>
-html, body {
-  margin: 0; padding: 0; overflow: hidden; height: 100%; background: black;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  touch-action: manipulation;
-  overscroll-behavior: none;
-}
-#container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-video, #overlay {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-#captureBtn {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160px; height: 160px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.95);
-  border: none;
-  cursor: pointer;
-  z-index: 20;
-}
-#menuBtn {
-  position: absolute;
-  bottom: 30px;
-  left: 30px;
-  width: 60px; height: 60px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.95);
-  border: none;
-  display: flex; align-items: center; justify-content: center;
-}
-#menuBtn img { width: 50%; height: 50%; }
-
-#nextGraphBtn, #prevGraphBtn {
-  position: absolute;
-  bottom: 200px;
-  width: 70px; height: 70px;
-  border-radius: 50%;
-  background: #007aff;
-  border: none;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-#nextGraphBtn { right: 30px; }
-#prevGraphBtn { left: 30px; }
-#nextGraphBtn img, #prevGraphBtn img { width: 50%; height: 50%; }
-
-#controls {
-  position: absolute;
-  top: 20px; left: 20px;
-  background: rgba(255,255,255,0.95);
-  padding: 15px;
-  border-radius: 15px;
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  z-index: 15;
-  width: 220px;
-}
-#controls select, #controls button {
-  font-size: 14px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  width: 100%;
-  background: #f2f2f7;
-}
-#zoomControls { display: flex; gap: 6px; }
-#zoomControls button {
-  width: 36px; height: 36px;
-  font-size: 18px;
-  border-radius: 50%;
-  border: none;
-  background: #f2f2f7;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Камера з графіками</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transform-origin: center center;
+      transition: transform 0.3s ease;
+    }
+    #camera-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: rgba(0,0,0,0.5);
+      padding: 15px;
+      border-radius: 20px;
+      transform: scale(1.2);
+    }
+    #controls button {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      border: none;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #controls button:hover {
+      background: #d9d9d9;
+    }
+    #shutter {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 5px solid white;
+      background: #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #shutter:hover {
+      background: #d9d9d9;
+    }
+    #left-arrow, #right-arrow {
+      position: absolute;
+      bottom: 160px;
+      width: 70px;
+      height: 70px;
+      border-radius: 20px;
+      border: none;
+      background: #007aff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    #left-arrow img, #right-arrow img {
+      width: 40px;
+      height: 40px;
+    }
+    #left-arrow { left: calc(50% - 100px); }
+    #right-arrow { right: calc(50% - 100px); }
+    #graph-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      object-fit: contain;
+    }
+    canvas { display: none; }
+  </style>
 </head>
 <body>
-<div id="container">
-  <video id="camera" autoplay playsinline></video>
-  <img id="overlay" src="graf0.png">
-
-  <div id="captureBtn"></div>
-  <button id="nextGraphBtn"><img src="arrow.svg" alt="next"></button>
-  <button id="prevGraphBtn"><img src="arrow1.svg" alt="prev"></button>
-  <button id="menuBtn"><img src="add.svg" alt="add"></button>
-
-  <div id="controls">
-    <select id="imageSelect"></select>
-    <button id="switchCam">Перевернути камеру</button>
-    <button id="rotateCam">Повернути відео</button>
-    <div id="zoomControls">
-      <button id="zoomIn">+</button>
-      <button id="zoomOut">-</button>
+  <div id="camera-container">
+    <video id="camera" autoplay playsinline></video>
+    <img id="graph-overlay" src="graf0.png" alt="Графік">
+    
+    <div id="controls">
+      <button id="zoom-in-page">⬆️</button>
+      <button id="zoom-out-page">⬇️</button>
     </div>
+
+    <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
+    <button id="right-arrow"><img src="arror.svg" alt="→"></button>
+    <button id="shutter"></button>
   </div>
-</div>
+  <canvas id="canvas"></canvas>
 
-<script>
-const video = document.getElementById('camera');
-const overlay = document.getElementById('overlay');
-const select = document.getElementById('imageSelect');
-const switchCamBtn = document.getElementById('switchCam');
-const rotateCamBtn = document.getElementById('rotateCam');
-const captureBtn = document.getElementById('captureBtn');
-const menuBtn = document.getElementById('menuBtn');
-const controls = document.getElementById('controls');
-const zoomInBtn = document.getElementById('zoomIn');
-const zoomOutBtn = document.getElementById('zoomOut');
-const nextGraphBtn = document.getElementById('nextGraphBtn');
-const prevGraphBtn = document.getElementById('prevGraphBtn');
+  <script>
+    const video = document.getElementById('camera');
+    const shutter = document.getElementById('shutter');
+    const canvas = document.getElementById('canvas');
+    const graphOverlay = document.getElementById('graph-overlay');
+    const leftArrow = document.getElementById('left-arrow');
+    const rightArrow = document.getElementById('right-arrow');
+    const zoomInPage = document.getElementById('zoom-in-page');
+    const zoomOutPage = document.getElementById('zoom-out-page');
 
-let currentFacing = 'environment';
-let videoRotation = 0;
-let videoScale = 1;
-let graphIndex = 0;
-let graphs = [];
+    let graphIndex = 0;
+    const maxGraphs = 15;
+    let pageScale = 1;
 
-function updateVideoTransform() {
-  video.style.transform = `translate(-50%, -50%) scale(${videoScale}) rotate(${videoRotation}deg)`;
-}
+    // Камера
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => console.error("Помилка доступу до камери:", err));
 
-async function startCamera() {
-  if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: currentFacing } }, audio: false });
-    video.srcObject = stream;
-  } catch(err) { console.error("Помилка доступу до камери:", err); }
-}
+    // Зйомка
+    shutter.addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = "photo.jpg";
+        link.click();
+      }, 'image/jpeg');
+    });
 
-async function detectGraphs() {
-  const maxFiles = 16;
-  for(let i=0; i<maxFiles; i++){
-    const url = `graf${i}.png`;
-    try {
-      await fetch(url, { method: 'HEAD' });
-      const opt = document.createElement('option');
-      opt.value = url;
-      opt.text = `Graf ${i}`;
-      select.appendChild(opt);
-      graphs.push(url);
-      if(i===0){ overlay.src = url; select.value = url; }
-    } catch(e){}
-  }
-}
+    // Перемикання графіків
+    rightArrow.addEventListener('click', () => {
+      graphIndex = (graphIndex + 1) % (maxGraphs + 1);
+      graphOverlay.src = `graf${graphIndex}.png`;
+    });
+    leftArrow.addEventListener('click', () => {
+      graphIndex = (graphIndex - 1 + (maxGraphs + 1)) % (maxGraphs + 1);
+      graphOverlay.src = `graf${graphIndex}.png`;
+    });
 
-switchCamBtn.addEventListener('click', ()=>{ currentFacing = currentFacing==='environment'?'user':'environment'; startCamera(); });
-rotateCamBtn.addEventListener('click', ()=>{ videoRotation = (videoRotation+90)%360; updateVideoTransform(); });
-zoomInBtn.addEventListener('click', ()=>{ videoScale += 0.1; updateVideoTransform(); });
-zoomOutBtn.addEventListener('click', ()=>{ videoScale = Math.max(0.1, videoScale-0.1); updateVideoTransform(); });
-select.addEventListener('change', ()=>{ overlay.src = select.value; });
-menuBtn.addEventListener('click', ()=> controls.style.display = controls.style.display==='flex'?'none':'flex');
-
-nextGraphBtn.addEventListener('click', ()=>{
-  if(graphs.length===0) return;
-  graphIndex = (graphIndex+1)%graphs.length;
-  overlay.src = graphs[graphIndex];
-  select.value = overlay.src;
-});
-prevGraphBtn.addEventListener('click', ()=>{
-  if(graphs.length===0) return;
-  graphIndex = (graphIndex-1+graphs.length)%graphs.length;
-  overlay.src = graphs[graphIndex];
-  select.value = overlay.src;
-});
-
-captureBtn.addEventListener('click', ()=>{
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const imgData = canvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = imgData;
-  a.download = 'photo.png';
-  a.click();
-});
-
-startCamera();
-detectGraphs();
-</script>
+    // Масштабування сторінки
+    zoomInPage.addEventListener('click', () => {
+      pageScale = Math.min(pageScale + 0.1, 2);
+      document.body.style.transform = `scale(${pageScale})`;
+    });
+    zoomOutPage.addEventListener('click', () => {
+      pageScale = Math.max(pageScale - 0.1, 0.5);
+      document.body.style.transform = `scale(${pageScale})`;
+    });
+  </script>
 </body>
 </html>
