@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1">
 <title>Камера з графіками</title>
 <style>
 body {
@@ -14,7 +14,6 @@ body {
   align-items: center;
   height: 100vh;
   transform-origin: center center;
-  transition: transform 0.3s ease;
 }
 #camera-container {
   position: relative;
@@ -46,19 +45,18 @@ video {
   height: 80px;
   border-radius: 50%;
   border: 4px solid white;
-  background: #f0f0f0;
+  background: white;
   cursor: pointer;
 }
-#shutter:hover { background: #d9d9d9; }
 /* Стрілки перемикання графіків */
-#left-arrow, #right-arrow {
+#left-arrow, #right-arrow, #flip-btn, #lens-btn {
   position: absolute;
   bottom: 130px;
   width: 55px;
   height: 55px;
   border-radius: 15px;
   border: none;
-  background: #007aff;
+  background: white;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -67,6 +65,8 @@ video {
 #left-arrow img, #right-arrow img { width: 28px; height: 28px; }
 #left-arrow { right: 100px; }
 #right-arrow { right: 30px; }
+#flip-btn { right: 30px; bottom: 200px; }
+#lens-btn { right: 100px; bottom: 200px; }
 /* Кнопка меню */
 #settings-btn {
   position: absolute;
@@ -119,22 +119,19 @@ canvas { display: none; }
   <!-- Панель налаштувань -->
   <div id="controls">
     <select id="graph-select"></select>
-    <button id="switchCam">↺</button>
     <button id="rotateCam">⟳</button>
     <div style="display:flex; gap:5px;">
       <button id="zoomIn">+</button>
       <button id="zoomOut">-</button>
     </div>
-    <div style="display:flex; gap:5px;">
-      <button id="zoomPageIn">⬆️</button>
-      <button id="zoomPageOut">⬇️</button>
-    </div>
   </div>
 
-  <!-- Кнопки перемикання графіків та затвору справа -->
+  <!-- Кнопки справа -->
   <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
   <button id="right-arrow"><img src="arror.svg" alt="→"></button>
   <button id="shutter"></button>
+  <button id="flip-btn">↺</button>
+  <button id="lens-btn">0.5×</button>
 </div>
 <canvas id="canvas"></canvas>
 
@@ -148,21 +145,20 @@ const rightArrow = document.getElementById('right-arrow');
 const settingsBtn = document.getElementById('settings-btn');
 const controls = document.getElementById('controls');
 const graphSelect = document.getElementById('graph-select');
-const switchCamBtn = document.getElementById('switchCam');
 const rotateCamBtn = document.getElementById('rotateCam');
 const zoomInBtn = document.getElementById('zoomIn');
 const zoomOutBtn = document.getElementById('zoomOut');
-const zoomPageInBtn = document.getElementById('zoomPageIn');
-const zoomPageOutBtn = document.getElementById('zoomPageOut');
+const flipBtn = document.getElementById('flip-btn');
+const lensBtn = document.getElementById('lens-btn');
 
 let graphIndex = 0;
 const maxGraphs = 15;
-let pageScale = 1;
 let videoScale = 1;
 let currentFacing = 'environment';
 let videoRotation = 0;
+let lensOptions = [0.5, 1, 2];
+let lensIndex = 1; // старт з 1×
 
-// Камера
 async function startCamera() {
   if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
   try {
@@ -172,7 +168,6 @@ async function startCamera() {
 }
 startCamera();
 
-// Заповнення select графіками
 for(let i=0;i<=maxGraphs;i++){
   const opt = document.createElement('option');
   opt.value = `graf${i}.png`;
@@ -180,12 +175,10 @@ for(let i=0;i<=maxGraphs;i++){
   graphSelect.appendChild(opt);
 }
 
-// Кнопки
 settingsBtn.addEventListener('click', ()=>controls.style.display = controls.style.display==='flex'?'none':'flex');
-
 graphSelect.addEventListener('change', ()=>graphOverlay.src = graphSelect.value);
 
-switchCamBtn.addEventListener('click', ()=>{
+flipBtn.addEventListener('click', ()=>{
   currentFacing = currentFacing==='environment'?'user':'environment';
   startCamera();
 });
@@ -204,14 +197,15 @@ zoomOutBtn.addEventListener('click', ()=>{
   video.style.transform = `scale(${videoScale}) rotate(${videoRotation}deg)`;
 });
 
-// Масштаб сторінки
-zoomPageInBtn.addEventListener('click', ()=>{
-  pageScale = Math.min(pageScale+0.1,2);
-  document.body.style.transform = `scale(${pageScale})`;
-});
-zoomPageOutBtn.addEventListener('click', ()=>{
-  pageScale = Math.max(pageScale-0.1,0.5);
-  document.body.style.transform = `scale(${pageScale})`;
+// Об'єктиви
+lensBtn.addEventListener('click', ()=>{
+  lensIndex = (lensIndex +1) % lensOptions.length;
+  const track = video.srcObject.getVideoTracks()[0];
+  const capabilities = track.getCapabilities();
+  if(capabilities.zoom) {
+    track.applyConstraints({ advanced:[{zoom:lensOptions[lensIndex]}] });
+  }
+  lensBtn.textContent = lensOptions[lensIndex]+"×";
 });
 
 // Зйомка
