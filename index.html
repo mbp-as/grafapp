@@ -3,23 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Камера з графіками</title>
+
+  <title>Моя Камера</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="data:application/manifest+json,{
+    &quot;name&quot;:&quot;Моя Камера&quot;,
+    &quot;short_name&quot;:&quot;Камера&quot;,
+    &quot;start_url&quot;:&quot;.&quot;,
+    &quot;display&quot;:&quot;standalone&quot;,
+    &quot;background_color&quot;:&quot;#000000&quot;,
+    &quot;theme_color&quot;:&quot;#000000&quot;,
+    &quot;icons&quot;:[
+      {&quot;src&quot;:&quot;icon-192.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;},
+      {&quot;src&quot;:&quot;icon-512.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;}
+    ]
+  }">
+
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Моя Камера">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <style>
     body {
       margin: 0;
       background: black;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      touch-action: none;
     }
     #camera-container {
       position: relative;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
     video {
       width: 100%;
@@ -34,7 +52,7 @@
       pointer-events: none;
       object-fit: contain;
     }
-    /* Панель справа */
+    /* Панель праворуч */
     #controls {
       position: absolute;
       right: 10px;
@@ -63,7 +81,6 @@
       height: 80px;
       background: white;
     }
-    /* Кнопки вгору/вниз */
     .side-btn {
       width: 55px;
       height: 55px;
@@ -121,7 +138,7 @@
     <video id="camera" autoplay playsinline></video>
     <img id="graph" src="graf0.png">
 
-    <!-- Панель справа -->
+    <!-- Панель праворуч -->
     <div id="controls">
       <button id="prevGraph" class="side-btn"><img src="arror1.svg"></button>
       <button id="nextGraph" class="side-btn"><img src="arror.svg"></button>
@@ -141,6 +158,8 @@
     </div>
     <button id="settings-toggle"><img src="add.svg"></button>
   </div>
+
+  <canvas id="canvas" style="display:none;"></canvas>
 
   <script>
     const video = document.getElementById("camera");
@@ -165,6 +184,7 @@
     let pageZoom = 1;
     let lensModes = ["05.svg", "1x.svg", "2x.svg"];
     let lensIndex = 1;
+    let stream, track;
 
     // Заповнення select графів
     for (let i = 0; i <= 15; i++) {
@@ -175,100 +195,64 @@
     }
 
     async function startCamera() {
+      if (stream) stream.getTracks().forEach(t => t.stop());
       const constraints = {
-        video: {
-          facingMode,
-          width: { ideal: 4096 },
-          height: { ideal: 2160 },
-          zoom: true
-        }
+        video: { facingMode, width: { ideal: 4096 }, height: { ideal: 2160 } }
       };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
       video.srcObject = stream;
+      track = stream.getVideoTracks()[0];
     }
     startCamera();
 
     // Кнопки графів
-    nextGraphBtn.onclick = () => {
-      currentGraph = (currentGraph + 1) % 16;
-      graph.src = `graf${currentGraph}.png`;
-      graphSelect.value = currentGraph;
-    };
-    prevGraphBtn.onclick = () => {
-      currentGraph = (currentGraph - 1 + 16) % 16;
-      graph.src = `graf${currentGraph}.png`;
-      graphSelect.value = currentGraph;
-    };
-    graphSelect.onchange = () => {
-      currentGraph = parseInt(graphSelect.value);
-      graph.src = `graf${currentGraph}.png`;
-    };
+    nextGraphBtn.onclick = () => { currentGraph = (currentGraph+1)%16; graph.src=`graf${currentGraph}.png`; graphSelect.value=currentGraph; };
+    prevGraphBtn.onclick = () => { currentGraph=(currentGraph-1+16)%16; graph.src=`graf${currentGraph}.png`; graphSelect.value=currentGraph; };
+    graphSelect.onchange = () => { currentGraph=parseInt(graphSelect.value); graph.src=`graf${currentGraph}.png`; };
 
     // Перемикання камери
-    flipCameraBtn.onclick = () => {
-      facingMode = facingMode === "environment" ? "user" : "environment";
-      startCamera();
-    };
+    flipCameraBtn.onclick = () => { facingMode=facingMode==="environment"?"user":"environment"; startCamera(); };
 
     // Поворот відео
-    rotateCameraBtn.onclick = () => {
-      rotation = (rotation + 90) % 360;
-      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
-    };
+    rotateCameraBtn.onclick = () => { rotation=(rotation+90)%360; video.style.transform=`rotate(${rotation}deg) scale(${zoom})`; };
 
     // Зум відео
-    zoomInBtn.onclick = () => {
-      zoom += 0.1;
-      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
-    };
-    zoomOutBtn.onclick = () => {
-      zoom = Math.max(0.5, zoom - 0.1);
-      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
-    };
+    zoomInBtn.onclick = () => { zoom+=0.1; video.style.transform=`rotate(${rotation}deg) scale(${zoom})`; };
+    zoomOutBtn.onclick = () => { zoom=Math.max(0.5,zoom-0.1); video.style.transform=`rotate(${rotation}deg) scale(${zoom})`; };
 
-    // Масштабування сторінки
-    document.getElementById("pageZoomIn").onclick = () => {
-      pageZoom += 0.1;
-      document.body.style.transform = `scale(${pageZoom})`;
-      document.body.style.transformOrigin = "center";
-    };
-    document.getElementById("pageZoomOut").onclick = () => {
-      pageZoom = Math.max(0.5, pageZoom - 0.1);
-      document.body.style.transform = `scale(${pageZoom})`;
-      document.body.style.transformOrigin = "center";
-    };
+    // Масштаб сторінки
+    pageZoomIn.onclick = () => { pageZoom+=0.1; document.body.style.zoom=pageZoom; };
+    pageZoomOut.onclick = () => { pageZoom=Math.max(0.5,pageZoom-0.1); document.body.style.zoom=pageZoom; };
 
-    // Перемикання об’єктивів
-    lensSwitch.onclick = () => {
-      lensIndex = (lensIndex + 1) % lensModes.length;
-      lensIcon.src = lensModes[lensIndex];
-      // Задаємо зум відповідно
-      if (lensIndex === 0) zoom = 0.5;
-      if (lensIndex === 1) zoom = 1;
-      if (lensIndex === 2) zoom = 2;
-      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
-    };
-
-    // Відкрити/закрити меню
-    settingsToggle.onclick = () => {
-      settingsPanel.style.display = settingsPanel.style.display === "flex" ? "none" : "flex";
-    };
-
-    // Фото у макс якості
+    // Кнопка затвору
     shutter.onclick = () => {
-      const canvas = document.createElement("canvas");
+      const canvas = document.getElementById("canvas");
       canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.height = video.videoHeight + graph.height;
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      canvas.toBlob((blob) => {
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "photo.jpg";
-        link.click();
-      }, "image/jpeg", 1.0);
+      ctx.drawImage(graph,0,0,canvas.width,graph.height);
+      ctx.drawImage(video,0,graph.height,canvas.width,video.videoHeight);
+      const link = document.createElement("a");
+      link.download = "photo.png";
+      link.href = canvas.toDataURL("image/png",1.0);
+      link.click();
     };
+
+    // Кнопка об’єктива
+    lensSwitch.onclick = () => {
+      lensIndex = (lensIndex+1)%lensModes.length;
+      lensIcon.src = lensModes[lensIndex];
+      if(track && track.getCapabilities().zoom){
+        track.applyConstraints({advanced:[{zoom: [0.5,1,2][lensIndex]}]});
+      }
+    };
+
+    // Налаштування
+    settingsToggle.onclick = () => { settingsPanel.style.display = settingsPanel.style.display==="flex"?"none":"flex"; };
+    settingsPanel.style.display="flex";
+
+    // Заборона подвійного зуму
+    document.addEventListener('gesturestart', e => e.preventDefault());
   </script>
 </body>
 </html>
