@@ -2,137 +2,263 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>iOS Camera Style</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Камера з графіками</title>
   <style>
     body {
       margin: 0;
       background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       overflow: hidden;
-      -webkit-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       touch-action: none;
     }
-
     #camera-container {
       position: relative;
-      width: 100%;
-      height: 100%;
-      max-width: 500px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
     video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-
-    /* Панель управління справа */
+    #graph {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      object-fit: contain;
+    }
+    /* Панель справа */
     #controls {
       position: absolute;
       right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
+      bottom: 15%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
-      background: rgba(0,0,0,0.3);
-      padding: 10px;
-      border-radius: 16px;
+      gap: 15px;
     }
-
     .control-btn {
-      background: white;
-      border: none;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      width: 56px;
-      height: 56px;
+      background: rgba(255,255,255,0.9);
       display: flex;
-      justify-content: center;
       align-items: center;
-      cursor: pointer;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
-
     .control-btn img {
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
     }
-
-    /* Кнопка затвора */
-    #capture-btn {
+    #shutter {
       width: 80px;
       height: 80px;
-      border: 4px solid white;
       background: white;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
     }
-
-    #capture-btn img {
-      width: 40px;
-      height: 40px;
+    /* Кнопки вгору/вниз */
+    .side-btn {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .side-btn img {
+      width: 24px;
+      height: 24px;
+    }
+    /* Меню налаштувань */
+    #settings-panel {
+      position: absolute;
+      left: 10px;
+      bottom: 10%;
+      width: 220px;
+      padding: 15px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #settings-panel button, #settings-panel select {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      background: #f2f2f7;
+      font-size: 14px;
+    }
+    #settings-toggle {
+      position: absolute;
+      left: 15px;
+      bottom: 5%;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #settings-toggle img {
+      width: 28px;
+      height: 28px;
     }
   </style>
 </head>
 <body>
   <div id="camera-container">
-    <video id="video" autoplay playsinline></video>
+    <video id="camera" autoplay playsinline></video>
+    <img id="graph" src="graf0.png">
 
+    <!-- Панель справа -->
     <div id="controls">
-      <button id="prev-graph" class="control-btn">
-        <img src="arror1.svg" alt="prev">
-      </button>
-
-      <button id="capture-btn">
-        <img src="camera.svg" alt="capture">
-      </button>
-
-      <button id="next-graph" class="control-btn">
-        <img src="arror.svg" alt="next">
-      </button>
+      <button id="prevGraph" class="side-btn"><img src="arror1.svg"></button>
+      <button id="nextGraph" class="side-btn"><img src="arror.svg"></button>
+      <button id="lensSwitch" class="control-btn"><img id="lensIcon" src="1x.svg"></button>
+      <button id="shutter" class="control-btn"><img src="camera.svg"></button>
     </div>
+
+    <!-- Панель налаштувань -->
+    <div id="settings-panel">
+      <select id="graphSelect"></select>
+      <button id="flipCamera"><img src="camflip.svg" width="20"></button>
+      <button id="rotateCamera"><img src="camrot.svg" width="20"></button>
+      <button id="zoomIn"><img src="zoomin.svg" width="20"></button>
+      <button id="zoomOut"><img src="zoomout.svg" width="20"></button>
+      <button id="pageZoomIn">Масштаб +</button>
+      <button id="pageZoomOut">Масштаб -</button>
+    </div>
+    <button id="settings-toggle"><img src="add.svg"></button>
   </div>
 
   <script>
-    const video = document.getElementById("video");
-    const captureBtn = document.getElementById("capture-btn");
+    const video = document.getElementById("camera");
+    const graph = document.getElementById("graph");
+    const shutter = document.getElementById("shutter");
+    const flipCameraBtn = document.getElementById("flipCamera");
+    const rotateCameraBtn = document.getElementById("rotateCamera");
+    const zoomInBtn = document.getElementById("zoomIn");
+    const zoomOutBtn = document.getElementById("zoomOut");
+    const prevGraphBtn = document.getElementById("prevGraph");
+    const nextGraphBtn = document.getElementById("nextGraph");
+    const lensSwitch = document.getElementById("lensSwitch");
+    const lensIcon = document.getElementById("lensIcon");
+    const settingsToggle = document.getElementById("settings-toggle");
+    const settingsPanel = document.getElementById("settings-panel");
+    const graphSelect = document.getElementById("graphSelect");
 
-    // Запуск камери з максимальною якістю
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "environment",
-            width: { ideal: 4096 },
-            height: { ideal: 2160 }
-          }
-        });
-        video.srcObject = stream;
-      } catch (err) {
-        console.error("Помилка доступу до камери:", err);
-      }
+    let currentGraph = 0;
+    let facingMode = "environment";
+    let rotation = 0;
+    let zoom = 1;
+    let pageZoom = 1;
+    let lensModes = ["05.svg", "1x.svg", "2x.svg"];
+    let lensIndex = 1;
+
+    // Заповнення select графів
+    for (let i = 0; i <= 15; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = `graf${i}`;
+      graphSelect.appendChild(opt);
     }
 
+    async function startCamera() {
+      const constraints = {
+        video: {
+          facingMode,
+          width: { ideal: 4096 },
+          height: { ideal: 2160 },
+          zoom: true
+        }
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+    }
     startCamera();
 
-    // Зйомка фото у максимально можливій якості
-    captureBtn.addEventListener("click", () => {
+    // Кнопки графів
+    nextGraphBtn.onclick = () => {
+      currentGraph = (currentGraph + 1) % 16;
+      graph.src = `graf${currentGraph}.png`;
+      graphSelect.value = currentGraph;
+    };
+    prevGraphBtn.onclick = () => {
+      currentGraph = (currentGraph - 1 + 16) % 16;
+      graph.src = `graf${currentGraph}.png`;
+      graphSelect.value = currentGraph;
+    };
+    graphSelect.onchange = () => {
+      currentGraph = parseInt(graphSelect.value);
+      graph.src = `graf${currentGraph}.png`;
+    };
+
+    // Перемикання камери
+    flipCameraBtn.onclick = () => {
+      facingMode = facingMode === "environment" ? "user" : "environment";
+      startCamera();
+    };
+
+    // Поворот відео
+    rotateCameraBtn.onclick = () => {
+      rotation = (rotation + 90) % 360;
+      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
+    };
+
+    // Зум відео
+    zoomInBtn.onclick = () => {
+      zoom += 0.1;
+      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
+    };
+    zoomOutBtn.onclick = () => {
+      zoom = Math.max(0.5, zoom - 0.1);
+      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
+    };
+
+    // Масштабування сторінки
+    document.getElementById("pageZoomIn").onclick = () => {
+      pageZoom += 0.1;
+      document.body.style.transform = `scale(${pageZoom})`;
+      document.body.style.transformOrigin = "center";
+    };
+    document.getElementById("pageZoomOut").onclick = () => {
+      pageZoom = Math.max(0.5, pageZoom - 0.1);
+      document.body.style.transform = `scale(${pageZoom})`;
+      document.body.style.transformOrigin = "center";
+    };
+
+    // Перемикання об’єктивів
+    lensSwitch.onclick = () => {
+      lensIndex = (lensIndex + 1) % lensModes.length;
+      lensIcon.src = lensModes[lensIndex];
+      // Задаємо зум відповідно
+      if (lensIndex === 0) zoom = 0.5;
+      if (lensIndex === 1) zoom = 1;
+      if (lensIndex === 2) zoom = 2;
+      video.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
+    };
+
+    // Відкрити/закрити меню
+    settingsToggle.onclick = () => {
+      settingsPanel.style.display = settingsPanel.style.display === "flex" ? "none" : "flex";
+    };
+
+    // Фото у макс якості
+    shutter.onclick = () => {
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -142,20 +268,7 @@
         link.download = "photo.jpg";
         link.click();
       }, "image/jpeg", 1.0);
-    });
-
-    // Блокування подвійного дотику/зуму
-    document.addEventListener("gesturestart", (e) => e.preventDefault());
-    document.addEventListener("gesturechange", (e) => e.preventDefault());
-    document.addEventListener("gestureend", (e) => e.preventDefault());
-
-    document.addEventListener("touchstart", function preventZoom(e) {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-
-    document.addEventListener("dblclick", function(e) {
-      e.preventDefault();
-    }, { passive: false });
+    };
   </script>
 </body>
 </html>
