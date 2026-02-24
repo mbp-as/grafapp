@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GrafApp Ultra</title>
+    <title>GrafApp Pro</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,7 +14,6 @@
             --ios-light-gray: #e5e5ea;
             --ios-red-bg: #ffd6d6;
             --ios-red-icon: #ff3b30;
-            --panel-bg: #ffffff;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -22,43 +21,47 @@
 
         .main-container { display: flex; width: 100vw; height: 100vh; }
 
-        /* Ліва частина: Видошукач */
+        /* Ліва частина: Камера */
         .viewport {
-            flex: 2.2; position: relative; background: #111;
+            flex: 2.5; position: relative; background: #000;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
 
         #videoElement { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-        #overlayImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10; opacity: 0.8; }
+        #overlayImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10; opacity: 0.9; }
         #photoCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; object-fit: cover; }
 
-        /* Права частина: Панель */
+        /* Права панель */
         .control-panel {
-            flex: 1; background: var(--panel-bg); margin: 12px; border-radius: 40px;
-            display: flex; flex-direction: column; padding: 15px; gap: 10px; position: relative;
+            flex: 1; background: #fff; margin: 15px; border-radius: 45px;
+            display: flex; flex-direction: column; padding: 20px; gap: 12px; position: relative;
         }
 
-        .nav-header { display: flex; width: 100%; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
-        .btn-blue { width: 44px; height: 44px; border-radius: 50%; background: var(--ios-blue); border: none; color: white; font-size: 20px; cursor: pointer; }
-        .page-indicator { flex-grow: 1; height: 44px; border-radius: 22px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; }
+        .nav-header { display: flex; width: 100%; justify-content: space-between; gap: 10px; }
+        .btn-blue { width: 55px; height: 55px; border-radius: 50%; background: var(--ios-blue); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-blue img { width: 24px; filter: brightness(0) invert(1); } /* arror.svg */
+        
+        .page-indicator { flex-grow: 1; height: 55px; border-radius: 28px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
 
-        /* Кнопки головного меню */
-        .main-menu { display: flex; flex-direction: column; gap: 10px; height: 100%; }
-        .action-button { width: 100%; flex: 2; background: var(--ios-light-gray); border-radius: 30px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .secondary-row { display: flex; gap: 10px; flex: 1; }
-        .btn-gray { flex: 1; background: var(--ios-light-gray); border-radius: 25px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .delete-button { width: 100%; height: 60px; background: var(--ios-red-bg); border-radius: 30px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* Контейнери меню */
+        #mainMenu, #settingsPanel { display: flex; flex-direction: column; gap: 12px; height: 100%; width: 100%; }
+        #settingsPanel { display: none; overflow-y: auto; }
 
-        /* Панель налаштувань */
-        #settingsPanel {
-            display: none; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-bottom: 10px;
-        }
-        .setting-item { width: 100%; padding: 12px; background: var(--ios-light-gray); border-radius: 15px; border: none; font-weight: 600; cursor: pointer; font-size: 14px; text-align: center; }
-        .setting-group { display: flex; gap: 5px; width: 100%; }
-        .setting-group .setting-item { flex: 1; padding: 10px 5px; font-size: 12px; }
-        .back-btn { background: var(--ios-blue); color: white; margin-top: auto; }
+        .btn-action { width: 100%; flex: 1.5; background: var(--ios-light-gray); border-radius: 35px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-action img { width: 45px; } /* camera.svg */
 
-        svg { width: 28px; height: 28px; }
+        .row { display: flex; gap: 12px; flex: 0.8; }
+        .btn-secondary { flex: 1; background: var(--ios-light-gray); border-radius: 30px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-secondary img { width: 32px; } /* settings.svg / camflip.svg */
+
+        .btn-delete { width: 100%; height: 75px; background: var(--ios-red-bg); border-radius: 35px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-delete img { width: 30px; } /* delete.svg */
+
+        /* Елементи налаштувань */
+        .setting-row { display: flex; gap: 8px; width: 100%; }
+        .btn-option { flex: 1; padding: 15px 5px; background: var(--ios-light-gray); border: none; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .btn-option img { width: 24px; }
+        .btn-back { background: var(--ios-blue); color: white; border-radius: 25px; padding: 15px; margin-top: auto; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -72,41 +75,40 @@
 
         <div class="control-panel">
             <div class="nav-header">
-                <button class="btn-blue" onclick="changeGraf(-1)">←</button>
-                <div class="page-indicator" id="grafNum">0</div>
-                <button class="btn-blue" onclick="changeGraf(1)">→</button>
+                <button class="btn-blue" onclick="changeGraf(-1)"><img src="arror.svg" style="transform: rotate(0deg);"></button>
+                <div class="page-indicator" id="grafNum">1</div>
+                <button class="btn-blue" onclick="changeGraf(1)"><img src="arror1.svg"></button>
             </div>
 
-            <div id="mainMenu" class="main-menu">
-                <button class="action-button" id="snap">
-                    <svg viewBox="0 0 24 24" fill="#333"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
+            <div id="mainMenu">
+                <button class="btn-action" onclick="takeSnapshot()">
+                    <img src="camera.svg">
                 </button>
-                <div class="secondary-row">
-                    <button class="btn-gray" onclick="toggleSettings()">
-                        <svg viewBox="0 0 24 24" fill="#333"><path d="M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5zm7-4.42V9.08l-2.11-.35c-.19-.64-.44-1.25-.75-1.81l1.24-1.72-1.42-1.42-1.72 1.24c-.56-.31-1.17-.56-1.81-.75L11.92 2H9.08l-.35 2.11c-.64.19-1.25.44-1.81.75L5.2 3.62 3.78 5.04l1.24 1.72c-.31.56-.56 1.17-.75 1.81L2.16 8.92v2.84l2.11.35c.19.64.44 1.25.75 1.81l-1.24 1.72 1.42 1.42 1.72-1.24c.56.31 1.17.56 1.81.75l.35 2.11h2.84l.35-2.11c.64-.19 1.25-.44 1.81-.75l1.72 1.24 1.42-1.42-1.24-1.72c.31-.56.56-1.17.75-1.81l2.11-.35z"/></svg>
-                    </button>
-                    <button class="btn-gray" onclick="switchCamera()">
-                        <svg viewBox="0 0 24 24" fill="#333"><path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>
-                    </button>
+                <div class="row">
+                    <button class="btn-secondary" onclick="toggleSettings()"><img src="settings.svg"></button>
+                    <button class="btn-secondary" onclick="switchCamera()"><img src="camflip.svg"></button>
                 </div>
-                <button class="delete-button" id="reset">
-                    <svg viewBox="0 0 24 24" fill="var(--ios-red-icon)"><path d="M9 3v1H4v2h1v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1V4h-5V3H9m2 2h2v1h-2V5m-4 3h10v11H7V8m2 2v7h2v-7H9m4 0v7h2v-7h-2z"/></svg>
+                <button class="btn-delete" onclick="resetView()">
+                    <img src="delete.svg">
                 </button>
             </div>
 
             <div id="settingsPanel">
-                <div class="setting-group">
-                    <button class="setting-item" onclick="setZoom('0.5x')">0.5x</button>
-                    <button class="setting-item" onclick="setZoom('1x')">1.0x</button>
+                <div class="setting-row">
+                    <button class="btn-option" onclick="setLens('wide')"><img src="05.svg"></button>
+                    <button class="btn-option" onclick="setLens('normal')"><img src="1x.svg"></button>
                 </div>
-                <button class="setting-item" onclick="rotateVideo()">Повернути 90°</button>
-                <button class="setting-item" onclick="mirrorVideo()">Відзеркалити</button>
-                <div class="setting-group">
-                    <button class="setting-item" onclick="setQuality(5)">5MP</button>
-                    <button class="setting-item" onclick="setQuality(12)">12MP</button>
-                    <button class="setting-item" onclick="setQuality(24)">24MP</button>
+                <button class="btn-option" onclick="rotate90()"><img src="camrot.svg" style="margin-right:8px;"> Обернути 90°</button>
+                <button class="btn-option" onclick="toggleMirror()">Відзеркалити</button>
+                
+                <p style="text-align:center; font-size:12px; margin:5px 0; color:#888;">Якість запису</p>
+                <div class="setting-row">
+                    <button class="btn-option" onclick="setRes(5)">5MP</button>
+                    <button class="btn-option" onclick="setRes(12)">12MP</button>
+                    <button class="btn-option" onclick="setRes(24)">24MP</button>
                 </div>
-                <button class="setting-item back-btn" onclick="toggleSettings()">Назад</button>
+                
+                <button class="btn-back" onclick="toggleSettings()">ГОТОВО</button>
             </div>
         </div>
     </div>
@@ -114,14 +116,14 @@
     <script>
         const video = document.getElementById('videoElement');
         const overlay = document.getElementById('overlayImage');
-        const grafNum = document.getElementById('grafNum');
+        const grafLabel = document.getElementById('grafNum');
         let currentGraf = 0;
         let isFront = false;
         let rotation = 0;
-        let isMirrored = false;
-        let qualityRatio = 12;
+        let mirrored = false;
 
-        async function initCamera() {
+        // Запуск камери
+        async function startCam() {
             const constraints = {
                 video: { 
                     facingMode: isFront ? "user" : "environment",
@@ -131,87 +133,68 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-            } catch (e) { alert("Камера недоступна"); }
+            } catch (e) { console.error("Camera error:", e); }
         }
 
         function switchCamera() {
             isFront = !isFront;
-            initCamera();
+            startCam();
         }
 
         function toggleSettings() {
-            const main = document.getElementById('mainMenu');
-            const sett = document.getElementById('settingsPanel');
-            if(main.style.display === 'none') {
-                main.style.display = 'flex';
-                sett.style.display = 'none';
-            } else {
-                main.style.display = 'none';
-                sett.style.display = 'flex';
-            }
+            const mm = document.getElementById('mainMenu');
+            const sp = document.getElementById('settingsPanel');
+            const isOpen = mm.style.display === 'none';
+            mm.style.display = isOpen ? 'flex' : 'none';
+            sp.style.display = isOpen ? 'none' : 'flex';
         }
 
-        function changeGraf(step) {
-            currentGraf = (currentGraf + step + 10) % 10;
-            grafNum.innerText = currentGraf;
+        function changeGraf(dir) {
+            currentGraf = (currentGraf + dir + 10) % 10;
+            grafLabel.innerText = currentGraf;
             overlay.src = `graf${currentGraf}.png`;
         }
 
-        function rotateVideo() {
+        function rotate90() {
             rotation = (rotation + 90) % 360;
-            updateTransform();
+            applyTrans();
         }
 
-        function mirrorVideo() {
-            isMirrored = !isMirrored;
-            updateTransform();
+        function toggleMirror() {
+            mirrored = !mirrored;
+            applyTrans();
         }
 
-        function updateTransform() {
-            video.style.transform = `rotate(${rotation}deg) scaleX(${isMirrored ? -1 : 1})`;
+        function applyTrans() {
+            video.style.transform = `rotate(${rotation}deg) scaleX(${mirrored ? -1 : 1})`;
         }
 
-        function setQuality(mp) {
-            qualityRatio = mp;
-            alert(`Якість встановлена на ${mp}MP`);
-        }
-
-        async function setZoom(type) {
-            // У вебі прямий доступ до 0.5x об'єктива обмежений,
-            // намагаємось отримати доступ через перемикання пристроїв
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const cameras = devices.filter(d => d.kind === 'videoinput');
-            alert("Зміна об'єктива: " + type + " (якщо підтримується залізом)");
-        }
-
-        document.getElementById('snap').addEventListener('click', () => {
+        function takeSnapshot() {
             const canvas = document.getElementById('photoCanvas');
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
-            // Малюємо з урахуванням трансформацій
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.rotate(rotation * Math.PI / 180);
-            if(isMirrored) ctx.scale(-1, 1);
+            if(mirrored) ctx.scale(-1, 1);
             ctx.drawImage(video, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
             ctx.restore();
 
-            // Накладаємо graf
-            const img = new Image();
-            img.src = overlay.src;
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const grafImg = new Image();
+            grafImg.src = overlay.src;
+            grafImg.onload = () => {
+                ctx.drawImage(grafImg, 0, 0, canvas.width, canvas.height);
                 canvas.style.display = 'block';
             };
-        });
+        }
 
-        document.getElementById('reset').addEventListener('click', () => {
+        function resetView() {
             document.getElementById('photoCanvas').style.display = 'none';
-        });
+        }
 
-        window.onload = initCamera;
+        window.onload = startCam;
     </script>
 </body>
 </html>
