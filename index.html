@@ -1,286 +1,254 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1">
-<title>Камера з графіками</title>
-<style>
-body {
-  margin: 0;
-  overflow: hidden;
-  background: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  touch-action: none;
-}
-#camera-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scaleX(-1);
-}
-#graph-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  object-fit: contain;
-}
-/* Панель під кнопки камери */
-#button-panel {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 20px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-  cursor: grab;
-}
-/* Кнопки */
-#button-panel button {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-#button-panel button img {
-  width: 28px;
-  height: 28px;
-}
-/* Панель перетягування (вгорі кнопок) */
-#drag-handle {
-  width: 100%;
-  height: 20px;
-  cursor: grab;
-}
-/* Кнопка меню */
-#settings-btn {
-  position: absolute;
-  top: 20px;
-  left: 30px;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  border: none;
-  background: #007aff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-#settings-btn img { width: 30px; height: 30px; }
-/* Панель налаштувань */
-#controls {
-  position: absolute;
-  top: 90px;
-  left: 30px;
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  background: rgba(0,0,0,0.7);
-  padding: 12px;
-  border-radius: 16px;
-}
-#controls select, #controls button {
-  font-size: 14px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: #f2f2f7;
-  cursor: pointer;
-  text-align: center;
-}
-#controls button { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; }
-#controls button img { width: 28px; height: 28px; }
-canvas { display: none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GrafApp PWA</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --ios-blue: #007aff;
+            --ios-light-gray: #d1d1d6;
+            --ios-red-bg: #ffd6d6;
+            --ios-red-icon: #ff3b30;
+            --panel-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Основний контейнер (горизонтальний) */
+        .main-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            position: relative;
+        }
+
+        /* Ліва частина: Сітка 2x2 */
+        .photo-grid {
+            flex: 1.8;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            padding: 2px;
+            background: #444; /* Колір ліній розділення */
+        }
+
+        .grid-cell {
+            background: #222;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .grid-cell:active { opacity: 0.8; }
+
+        /* Права частина: Панель керування */
+        .control-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            margin: 10px;
+            margin-left: 0;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            justify-content: space-between;
+        }
+
+        /* Верхній ряд кнопок */
+        .nav-header {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--ios-blue);
+            border: none;
+            color: white;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .page-indicator {
+            flex-grow: 1;
+            height: 50px;
+            border-radius: 25px;
+            background: var(--ios-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Центральна кнопка камери */
+        .action-button {
+            width: 100%;
+            flex-grow: 0.6;
+            margin: 20px 0;
+            background: var(--ios-light-gray);
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+
+        .action-button svg {
+            width: 40px;
+            height: 40px;
+            fill: #333;
+        }
+
+        /* Кнопка кошика */
+        .delete-button {
+            width: 100%;
+            height: 70px;
+            background: var(--ios-red-bg);
+            border-radius: 35px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .delete-button svg {
+            width: 30px;
+            height: 30px;
+            fill: var(--ios-red-icon);
+        }
+
+        /* Статус-бар (імітація для краси) */
+        .ios-status {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            color: white;
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        input[type="file"] { display: none; }
+    </style>
 </head>
 <body>
-<div id="camera-container">
-  <video id="camera" autoplay playsinline></video>
-  <img id="graph-overlay" src="graf0.png" alt="Графік">
 
-  <!-- Кнопка меню -->
-  <button id="settings-btn"><img src="add.svg" alt="Меню"></button>
+    <div class="main-container">
+        <div class="ios-status">
+            <span>9:41</span>
+            <span>📶</span>
+            <span>🔋</span>
+        </div>
 
-  <!-- Панель налаштувань -->
-  <div id="controls">
-    <select id="graph-select"></select>
-    <button id="flipCam"><img src="camflip.svg" alt="Flip"></button>
-    <button id="rotateCam"><img src="camrot.svg" alt="Rotate"></button>
-    <div style="display:flex; gap:5px;">
-      <button id="zoomIn"><img src="zoomin.svg" alt="+"></button>
-      <button id="zoomOut"><img src="zoomout.svg" alt="-"></button>
+        <div class="photo-grid" id="grid">
+            <div class="grid-cell" id="cell-0"></div>
+            <div class="grid-cell" id="cell-1"></div>
+            <div class="grid-cell" id="cell-2"></div>
+            <div class="grid-cell" id="cell-3"></div>
+        </div>
+
+        <div class="control-panel">
+            <div class="nav-header">
+                <button class="btn-nav">←</button>
+                <div class="page-indicator">1</div>
+                <button class="btn-nav">→</button>
+            </div>
+
+            <button class="action-button" id="uploadTrigger">
+                <svg viewBox="0 0 24 24"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
+            </button>
+
+            <button class="delete-button" id="clearGrid">
+                <svg viewBox="0 0 24 24"><path d="M9 3v1H4v2h1v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1V4h-5V3H9m2 2h2v1h-2V5m-4 3h10v11H7V8m2 2v7h2v-7H9m4 0v7h2v-7h-2z"/></svg>
+            </button>
+        </div>
     </div>
-  </div>
 
-  <!-- Панель кнопок камери справа -->
-  <div id="button-panel">
-    <div id="drag-handle"></div>
-    <button id="left-arrow"><img src="arror1.svg" alt="←"></button>
-    <button id="right-arrow"><img src="arror.svg" alt="→"></button>
-    <button id="shutter"><img src="camera.svg" alt="Зйомка"></button>
-    <button id="lens-btn"><img src="1x.svg" alt="1×"></button>
-  </div>
-</div>
-<canvas id="canvas"></canvas>
+    <input type="file" id="fileInput" accept="image/*">
 
-<script>
-const video = document.getElementById('camera');
-const shutter = document.getElementById('shutter');
-const canvas = document.getElementById('canvas');
-const graphOverlay = document.getElementById('graph-overlay');
-const leftArrow = document.getElementById('left-arrow');
-const rightArrow = document.getElementById('right-arrow');
-const settingsBtn = document.getElementById('settings-btn');
-const controls = document.getElementById('controls');
-const graphSelect = document.getElementById('graph-select');
-const flipCamBtn = document.getElementById('flipCam');
-const rotateCamBtn = document.getElementById('rotateCam');
-const zoomInBtn = document.getElementById('zoomIn');
-const zoomOutBtn = document.getElementById('zoomOut');
-const lensBtn = document.getElementById('lens-btn');
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadTrigger = document.getElementById('uploadTrigger');
+        const clearBtn = document.getElementById('clearGrid');
+        const cells = document.querySelectorAll('.grid-cell');
+        
+        let currentCellIndex = 0;
 
-let graphIndex = 0;
-const maxGraphs = 15;
-let videoScale = 1;
-let currentFacing = 'environment';
-let videoRotation = 0;
-const lensIcons = ['05.svg','1x.svg','2x.svg'];
-let lensIndex = 1;
+        // Відкриття камери/галереї
+        uploadTrigger.addEventListener('click', () => {
+            fileInput.click();
+        });
 
-// Старт камери
-async function startCamera() {
-  if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: currentFacing } }, audio: false });
-    video.srcObject = stream;
-  } catch(err) { console.error("Помилка доступу до камери:", err); }
-}
-startCamera();
+        // Обробка вибраного фото
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    cells[currentCellIndex].style.backgroundImage = `url(${event.target.result})`;
+                    // Автоматично переходимо до наступної клітинки
+                    currentCellIndex = (currentCellIndex + 1) % cells.length;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
-// Заповнюємо select графіки
-for(let i=0;i<=maxGraphs;i++){
-  const opt = document.createElement('option');
-  opt.value = `graf${i}.png`;
-  opt.text = `Graf ${i}`;
-  graphSelect.appendChild(opt);
-}
+        // Очищення сітки
+        clearBtn.addEventListener('click', () => {
+            if(confirm('Очистити всі фото?')) {
+                cells.forEach(cell => cell.style.backgroundImage = 'none');
+                currentCellIndex = 0;
+            }
+        });
 
-// Меню налаштувань
-settingsBtn.addEventListener('click', ()=>controls.style.display = controls.style.display==='flex'?'none':'flex');
-graphSelect.addEventListener('change', ()=>graphOverlay.src = graphSelect.value);
-
-flipCamBtn.addEventListener('click', ()=>{
-  currentFacing = currentFacing==='environment'?'user':'environment';
-  startCamera();
-});
-
-rotateCamBtn.addEventListener('click', ()=>{
-  videoRotation = (videoRotation+90)%360;
-  video.style.transform = `scale(${videoScale}) rotate(${videoRotation}deg)`;
-});
-
-zoomInBtn.addEventListener('click', ()=>{
-  videoScale += 0.1;
-  video.style.transform = `scale(${videoScale}) rotate(${videoRotation}deg)`;
-});
-zoomOutBtn.addEventListener('click', ()=>{
-  videoScale = Math.max(0.1, videoScale-0.1);
-  video.style.transform = `scale(${videoScale}) rotate(${videoRotation}deg)`;
-});
-
-// Об’єктиви — реальний зум, якщо підтримує камера
-lensBtn.addEventListener('click', async ()=>{
-  const track = video.srcObject.getVideoTracks()[0];
-  const capabilities = track.getCapabilities();
-  lensIndex = (lensIndex + 1) % lensIcons.length;
-  lensBtn.firstElementChild.src = lensIcons[lensIndex];
-  if(capabilities.zoom) {
-    try {
-      await track.applyConstraints({ advanced: [{ zoom: [0.5,1,2][lensIndex] }] });
-    } catch(e) { console.warn("Zoom не підтримується", e); }
-  }
-});
-
-// Зйомка — високоякісне фото з відеопотоку
-shutter.addEventListener('click', ()=>{
-  const ctx = canvas.getContext('2d');
-  // Використовуємо справжню роздільну здатність відео
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  // Створюємо посилання на збереження
-  canvas.toBlob(blob=>{
-    const link=document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'photo.jpg';
-    link.click();
-  },'image/jpeg', 1); // якість 100%
-});
-
-// Перемикання графіків
-rightArrow.addEventListener('click', ()=>{
-  graphIndex = (graphIndex+1)%(maxGraphs+1);
-  graphOverlay.src = `graf${graphIndex}.png`;
-  graphSelect.value = graphOverlay.src;
-});
-leftArrow.addEventListener('click', ()=>{
-  graphIndex = (graphIndex-1+maxGraphs+1)%(maxGraphs+1);
-  graphOverlay.src = `graf${graphIndex}.png`;
-  graphSelect.value = graphOverlay.src;
-});
-
-// Блокування масштабування жестами
-document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
-document.addEventListener('touchmove', function(e) {
-  if(e.scale !== undefined && e.scale !== 1) e.preventDefault();
-}, { passive: false });
-document.addEventListener('dblclick', function(e) { e.preventDefault(); });
-
-// Перетягування панелі
-const panel = document.getElementById('button-panel');
-const handle = document.getElementById('drag-handle');
-let offsetX, offsetY, dragging=false;
-
-handle.addEventListener('pointerdown', e=>{
-  dragging=true;
-  offsetX = e.clientX - panel.offsetLeft;
-  offsetY = e.clientY - panel.offsetTop;
-  handle.setPointerCapture(e.pointerId);
-});
-
-handle.addEventListener('pointermove', e=>{
-  if(!dragging) return;
-  panel.style.left = (e.clientX - offsetX) + 'px';
-  panel.style.top = (e.clientY - offsetY) + 'px';
-  panel.style.right = 'auto';
-  panel.style.bottom = 'auto';
-});
-
-handle.addEventListener('pointerup', e=>{
-  dragging=false;
-  handle.releasePointerCapture(e.pointerId);
-});
-</script>
+        // Реєстрація Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(console.error);
+            });
+        }
+    </script>
 </body>
 </html>
