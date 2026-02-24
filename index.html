@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GrafApp Ultra Fix</title>
+    <title>GrafApp Superellipse Edition</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +14,8 @@
             --ios-light-gray: #e5e5ea;
             --ios-red-bg: #ffd6d6;
             --ios-red-icon: #ff3b30;
+            /* Шлях до маски супереліпсу */
+            --squircle: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M 0,50 C 0,5 5,0 50,0 S 100,5 100,50 95,100 50,100 0,95 0,50" fill="black"/></svg>');
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,33 +30,54 @@
 
         .main-container { display: flex; width: 100vw; height: 100vh; }
 
+        /* Камера */
         .viewport { flex: 2.5; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         #videoElement { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
         #overlayImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10; opacity: 0.9; }
         #photoCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; }
 
-        .control-panel { flex: 1; background: #fff; margin: 12px; border-radius: 45px; display: flex; flex-direction: column; padding: 20px; gap: 12px; }
+        /* Права панель із супереліпсом */
+        .control-panel { 
+            flex: 1; background: #fff; margin: 15px; 
+            -webkit-mask-image: var(--squircle); mask-image: var(--squircle);
+            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+            display: flex; flex-direction: column; padding: 25px 20px; gap: 12px; 
+        }
 
         .nav-header { display: flex; width: 100%; justify-content: space-between; gap: 10px; align-items: center; }
-        .btn-blue { width: 50px; height: 50px; border-radius: 50%; background: var(--ios-blue); border: none; display: flex; align-items: center; justify-content: center; }
-        .btn-blue img { width: 22px; filter: brightness(0) invert(1); }
-        .page-indicator { flex-grow: 1; height: 50px; border-radius: 25px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
+        .btn-blue { width: 52px; height: 52px; border-radius: 50%; background: var(--ios-blue); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-blue img { width: 24px; filter: brightness(0) invert(1); }
+        .page-indicator { flex-grow: 1; height: 52px; border-radius: 26px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
 
         #mainMenu, #settingsPanel { display: flex; flex-direction: column; gap: 12px; height: 100%; }
         #settingsPanel { display: none; overflow-y: auto; }
 
-        .btn-main { width: 100%; flex: 1.8; background: var(--ios-light-gray); border-radius: 35px; border: none; display: flex; align-items: center; justify-content: center; }
-        .btn-main img { width: 45px; }
+        /* Кнопки з формою супереліпсу */
+        .squircle-btn {
+            background: var(--ios-light-gray); border: none; cursor: pointer;
+            -webkit-mask-image: var(--squircle); mask-image: var(--squircle);
+            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .btn-main { width: 100%; flex: 1.8; }
+        .btn-main img { width: 50px; }
 
         .row { display: flex; gap: 12px; flex: 1; }
-        .btn-sub { flex: 1; background: var(--ios-light-gray); border-radius: 30px; border: none; display: flex; align-items: center; justify-content: center; }
-        .btn-sub img { width: 30px; }
+        .btn-sub { flex: 1; }
+        .btn-sub img { width: 32px; }
 
-        .btn-delete { width: 100%; height: 70px; background: var(--ios-red-bg); border-radius: 35px; border: none; display: flex; align-items: center; justify-content: center; }
-        .btn-delete img { width: 28px; }
+        .btn-delete { 
+            width: 100%; height: 75px; background: var(--ios-red-bg); 
+            -webkit-mask-image: var(--squircle); mask-image: var(--squircle);
+            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+            border: none; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-delete img { width: 30px; }
 
-        .btn-opt { width: 100%; padding: 12px; background: var(--ios-light-gray); border-radius: 15px; border: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-done { background: var(--ios-blue); color: white; border-radius: 25px; padding: 15px; font-weight: 800; border: none; margin-top: auto; }
+        /* Налаштування */
+        .btn-opt { width: 100%; padding: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-done { background: var(--ios-blue); color: white; height: 65px; font-weight: 800; border: none; margin-top: auto; }
         .btn-reset-opt { background: var(--ios-red-bg); color: var(--ios-red-icon); }
     </style>
 </head>
@@ -80,33 +103,33 @@
             </div>
 
             <div id="mainMenu">
-                <button class="btn-main" id="captureBtn"><img src="camera.svg"></button>
+                <button class="squircle-btn btn-main" id="captureBtn"><img src="camera.svg"></button>
                 <div class="row">
-                    <button class="btn-sub" onclick="toggleSets()"><img src="GearSix.svg"></button>
-                    <button class="btn-sub" onclick="flipCam()"><img src="ArrowsClockwise.svg"></button>
+                    <button class="squircle-btn btn-sub" onclick="toggleSets()"><img src="GearSix.svg"></button>
+                    <button class="squircle-btn btn-sub" onclick="flipCam()"><img src="ArrowsClockwise.svg"></button>
                 </div>
                 <button class="btn-delete" onclick="resetView()"><img src="Trash.svg"></button>
             </div>
 
             <div id="settingsPanel">
-                <div style="display:flex; gap:8px;">
-                    <button class="btn-opt" onclick="setLens('0.5')"><img src="05.svg" width="20"></button>
-                    <button class="btn-opt" onclick="setLens('1')"><img src="1x.svg" width="20"></button>
+                <div style="display:flex; gap:8px; height: 60px;">
+                    <button class="squircle-btn btn-opt" onclick="setLens('0.5')"><img src="05.svg" width="22"></button>
+                    <button class="squircle-btn btn-opt" onclick="setLens('1')"><img src="1x.svg" width="22"></button>
                 </div>
-                <button class="btn-opt" onclick="doRot()"><img src="CameraRotate.svg" width="20"> Поворот 90°</button>
-                <button class="btn-opt" onclick="doMirror()">Відзеркалити</button>
+                <button class="squircle-btn btn-opt" style="height: 60px;" onclick="doRot()"><img src="CameraRotate.svg" width="22"> Поворот 90°</button>
+                <button class="squircle-btn btn-opt" style="height: 60px;" onclick="doMirror()">Відзеркалити</button>
                 
-                <div style="display:flex; gap:5px;">
-                    <button class="btn-opt" style="font-size:10px" onclick="setRes(5)">5MP</button>
-                    <button class="btn-opt" style="font-size:10px" onclick="setRes(12)">12MP</button>
-                    <button class="btn-opt" style="font-size:10px" onclick="setRes(24)">24MP</button>
+                <div style="display:flex; gap:5px; height: 50px;">
+                    <button class="squircle-btn btn-opt" onclick="setRes(5)">5MP</button>
+                    <button class="squircle-btn btn-opt" onclick="setRes(12)">12MP</button>
+                    <button class="squircle-btn btn-opt" onclick="setRes(24)">24MP</button>
                 </div>
 
-                <button class="btn-opt btn-reset-opt" onclick="fullReset()">
-                    <img src="Trash.svg" width="20"> Скинути все
+                <button class="squircle-btn btn-opt btn-reset-opt" style="height: 60px;" onclick="fullReset()">
+                    <img src="Trash.svg" width="22"> Скинути все
                 </button>
                 
-                <button class="btn-done" onclick="toggleSets()">ГОТОВО</button>
+                <button class="squircle-btn btn-done" onclick="toggleSets()">ГОТОВО</button>
             </div>
         </div>
     </div>
@@ -139,7 +162,6 @@
         function setRes(mp) {
             quality = mp === 24 ? 2.0 : (mp === 12 ? 1.0 : 0.7);
             initCamera();
-            alert(`Встановлено якість для ${mp}MP`);
         }
 
         function fullReset() {
@@ -149,7 +171,6 @@
             overlay.src = "graf0.png";
             updateVis();
             initCamera();
-            alert("Налаштування скинуто");
         }
 
         function toggleSets() {
