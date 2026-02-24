@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GrafApp Ultra</title>
+    <title>GrafApp Ultra Fix</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,28 +19,17 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: -apple-system, sans-serif; overflow: hidden; }
 
-        /* Заглушка для повороту екрана */
         #orientation-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; color: white;
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; color: white; z-index: 9999; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center; padding: 20px;
         }
-
-        @media (orientation: portrait) {
-            #orientation-overlay { display: flex; }
-        }
+        @media (orientation: portrait) { #orientation-overlay { display: flex; } }
 
         .main-container { display: flex; width: 100vw; height: 100vh; }
 
         .viewport { flex: 2.5; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        #videoElement { width: 100%; height: 100%; object-fit: cover; }
+        #videoElement { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
         #overlayImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10; opacity: 0.9; }
         #photoCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; }
 
@@ -52,7 +41,7 @@
         .page-indicator { flex-grow: 1; height: 50px; border-radius: 25px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
 
         #mainMenu, #settingsPanel { display: flex; flex-direction: column; gap: 12px; height: 100%; }
-        #settingsPanel { display: none; }
+        #settingsPanel { display: none; overflow-y: auto; }
 
         .btn-main { width: 100%; flex: 1.8; background: var(--ios-light-gray); border-radius: 35px; border: none; display: flex; align-items: center; justify-content: center; }
         .btn-main img { width: 45px; }
@@ -64,15 +53,16 @@
         .btn-delete { width: 100%; height: 70px; background: var(--ios-red-bg); border-radius: 35px; border: none; display: flex; align-items: center; justify-content: center; }
         .btn-delete img { width: 28px; }
 
-        .btn-done { background: var(--ios-blue); color: white; border-radius: 25px; padding: 15px; margin-top: auto; font-weight: 800; border: none; }
+        .btn-opt { width: 100%; padding: 12px; background: var(--ios-light-gray); border-radius: 15px; border: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-done { background: var(--ios-blue); color: white; border-radius: 25px; padding: 15px; font-weight: 800; border: none; margin-top: auto; }
+        .btn-reset-opt { background: var(--ios-red-bg); color: var(--ios-red-icon); }
     </style>
 </head>
 <body>
 
     <div id="orientation-overlay">
         <img src="CameraRotate.svg" style="width: 80px; margin-bottom: 20px; filter: invert(1);">
-        <h2>Будь ласка, переверніть пристрій горизонтально</h2>
-        <p>Для роботи програми потрібен альбомний режим</p>
+        <h2>Будь ласка, переверніть пристрій</h2>
     </div>
 
     <div class="main-container">
@@ -90,24 +80,32 @@
             </div>
 
             <div id="mainMenu">
-                <button class="btn-main" id="captureBtn">
-                    <img src="camera.svg">
-                </button>
+                <button class="btn-main" id="captureBtn"><img src="camera.svg"></button>
                 <div class="row">
                     <button class="btn-sub" onclick="toggleSets()"><img src="GearSix.svg"></button>
                     <button class="btn-sub" onclick="flipCam()"><img src="ArrowsClockwise.svg"></button>
                 </div>
-                <button class="btn-delete" onclick="resetView()">
-                    <img src="Trash.svg">
-                </button>
+                <button class="btn-delete" onclick="resetView()"><img src="Trash.svg"></button>
             </div>
 
             <div id="settingsPanel">
                 <div style="display:flex; gap:8px;">
-                    <button style="flex:1; padding:15px; border-radius:15px; border:none;" onclick="setLens('0.5')"><img src="05.svg" width="24"></button>
-                    <button style="flex:1; padding:15px; border-radius:15px; border:none;" onclick="setLens('1')"><img src="1x.svg" width="24"></button>
+                    <button class="btn-opt" onclick="setLens('0.5')"><img src="05.svg" width="20"></button>
+                    <button class="btn-opt" onclick="setLens('1')"><img src="1x.svg" width="20"></button>
                 </div>
-                <button style="padding:15px; border-radius:15px; border:none;" onclick="doRot()"><img src="CameraRotate.svg" width="24"> Поворот</button>
+                <button class="btn-opt" onclick="doRot()"><img src="CameraRotate.svg" width="20"> Поворот 90°</button>
+                <button class="btn-opt" onclick="doMirror()">Відзеркалити</button>
+                
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-opt" style="font-size:10px" onclick="setRes(5)">5MP</button>
+                    <button class="btn-opt" style="font-size:10px" onclick="setRes(12)">12MP</button>
+                    <button class="btn-opt" style="font-size:10px" onclick="setRes(24)">24MP</button>
+                </div>
+
+                <button class="btn-opt btn-reset-opt" onclick="fullReset()">
+                    <img src="Trash.svg" width="20"> Скинути все
+                </button>
+                
                 <button class="btn-done" onclick="toggleSets()">ГОТОВО</button>
             </div>
         </div>
@@ -117,24 +115,41 @@
         const video = document.getElementById('videoElement');
         const overlay = document.getElementById('overlayImage');
         const canvas = document.getElementById('photoCanvas');
-        let currentGraf = 0;
-        let isFront = false;
+        let currentGraf = 0, isFront = false, rot = 0, mir = false, quality = 1.0;
 
         async function initCamera() {
+            const constraints = {
+                video: { 
+                    facingMode: isFront ? "user" : "environment",
+                    width: { ideal: 1920 * quality }, 
+                    height: { ideal: 1080 * quality } 
+                }
+            };
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: isFront ? "user" : "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }
-                });
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-            } catch (err) { alert("Дозвольте доступ до камери"); }
+            } catch (err) { console.error(err); }
         }
 
         function flipCam() { isFront = !isFront; initCamera(); }
+        function doRot() { rot = (rot + 90) % 360; updateVis(); }
+        function doMirror() { mir = !mir; updateVis(); }
+        function updateVis() { video.style.transform = `rotate(${rot}deg) scaleX(${mir ? -1 : 1})`; }
+        
+        function setRes(mp) {
+            quality = mp === 24 ? 2.0 : (mp === 12 ? 1.0 : 0.7);
+            initCamera();
+            alert(`Встановлено якість для ${mp}MP`);
+        }
 
-        function changeGraf(dir) {
-            currentGraf = (currentGraf + dir + 10) % 10;
-            document.getElementById('grafNum').innerText = currentGraf;
-            overlay.src = `graf${currentGraf}.png`;
+        function fullReset() {
+            rot = 0; mir = false; quality = 1.0; isFront = false;
+            currentGraf = 0;
+            document.getElementById('grafNum').innerText = "0";
+            overlay.src = "graf0.png";
+            updateVis();
+            initCamera();
+            alert("Налаштування скинуто");
         }
 
         function toggleSets() {
@@ -143,38 +158,35 @@
             m.style.display = open ? 'flex' : 'none'; s.style.display = open ? 'none' : 'flex';
         }
 
-        // ВИПРАВЛЕНЕ ЗАВАНТАЖЕННЯ
+        function changeGraf(dir) {
+            currentGraf = (currentGraf + dir + 10) % 10;
+            document.getElementById('grafNum').innerText = currentGraf;
+            overlay.src = `graf${currentGraf}.png`;
+        }
+
         document.getElementById('captureBtn').onclick = function() {
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            // Малюємо відео
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(rot * Math.PI / 180);
+            if(mir) ctx.scale(-1, 1);
+            ctx.drawImage(video, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
+            ctx.restore();
             
-            // Накладаємо графіку
             const img = new Image();
-            img.crossOrigin = "anonymous";
             img.src = overlay.src;
             img.onload = function() {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Конвертуємо в Blob для надійного завантаження на iOS
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
+                canvas.toBlob(b => {
                     const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `Photo_${Date.now()}.jpg`;
-                    document.body.appendChild(a);
+                    a.href = URL.createObjectURL(b);
+                    a.download = `Graf_${Date.now()}.jpg`;
                     a.click();
-                    
-                    // Візуальне підтвердження
                     canvas.style.display = 'block';
-                    setTimeout(() => {
-                        canvas.style.display = 'none';
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                    }, 1000);
+                    setTimeout(() => canvas.style.display = 'none', 1000);
                 }, 'image/jpeg', 0.95);
             };
         };
