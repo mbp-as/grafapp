@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GrafApp Glass Edition</title>
+    <title>GrafApp Ultra Fix</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,10 +11,9 @@
     <style>
         :root {
             --ios-blue: #007aff;
-            --ios-light-gray: rgba(255, 255, 255, 0.5);
-            --ios-red-bg: rgba(255, 59, 48, 0.2);
+            --ios-light-gray: #e5e5ea;
+            --ios-red-bg: #ffd6d6;
             --ios-red-icon: #ff3b30;
-            --squircle: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M 0,50 C 0,5 5,0 50,0 S 100,5 100,50 95,100 50,100 0,95 0,50" fill="black"/></svg>');
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,81 +26,36 @@
         }
         @media (orientation: portrait) { #orientation-overlay { display: flex; } }
 
-        .main-container { display: flex; width: 100vw; height: 100vh; background: #000; }
+        .main-container { display: flex; width: 100vw; height: 100vh; }
 
-        /* Видошукач */
-        .viewport { 
-            flex: 2.5; position: relative; background: #000; overflow: hidden; 
-            display: flex; align-items: center; justify-content: center; 
-        }
+        .viewport { flex: 2.5; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         #videoElement { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
         #overlayImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10; opacity: 0.9; }
         #photoCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; }
 
-        /* Ефект тіні на межі */
-        .viewport::after {
-            content: ''; position: absolute; top: 0; right: 0; width: 40px; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(0,0,0,0.4));
-            z-index: 5; pointer-events: none;
-        }
-
-        /* Права панель - ГЛАССМОРФІЗМ */
-        .control-panel { 
-            flex: 1; 
-            background: rgba(255, 255, 255, 0.15); /* Дуже легкий білий */
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            margin: 15px; 
-            -webkit-mask-image: var(--squircle); mask-image: var(--squircle);
-            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-            display: flex; flex-direction: column; padding: 25px 20px; gap: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
+        .control-panel { flex: 1; background: #fff; margin: 12px; border-radius: 45px; display: flex; flex-direction: column; padding: 20px; gap: 12px; }
 
         .nav-header { display: flex; width: 100%; justify-content: space-between; gap: 10px; align-items: center; }
-        .btn-blue { 
-            width: 52px; height: 52px; border-radius: 50%; background: var(--ios-blue); 
-            border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
-        }
-        .btn-blue img { width: 24px; filter: brightness(0) invert(1); }
-        .page-indicator { 
-            flex-grow: 1; height: 52px; border-radius: 26px; background: var(--ios-blue); 
-            color: white; display: flex; align-items: center; justify-content: center; 
-            font-size: 22px; font-weight: 700; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
-        }
+        .btn-blue { width: 50px; height: 50px; border-radius: 50%; background: var(--ios-blue); border: none; display: flex; align-items: center; justify-content: center; }
+        .btn-blue img { width: 22px; filter: brightness(0) invert(1); }
+        .page-indicator { flex-grow: 1; height: 50px; border-radius: 25px; background: var(--ios-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
 
-        /* Кнопки зі скляним ефектом */
-        .squircle-btn {
-            background: rgba(255, 255, 255, 0.25); border: none; cursor: pointer;
-            -webkit-mask-image: var(--squircle); mask-image: var(--squircle);
-            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-            display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s;
-        }
-        .squircle-btn:active { background: rgba(255, 255, 255, 0.4); }
+        #mainMenu, #settingsPanel { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+        #settingsPanel { display: none; overflow-y: auto; }
 
-        .btn-main { width: 100%; flex: 1.8; }
-        .btn-main img { width: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .btn-main { width: 100%; flex: 1.8; background: var(--ios-light-gray); border-radius: 35px; border: none; display: flex; align-items: center; justify-content: center; }
+        .btn-main img { width: 45px; }
 
         .row { display: flex; gap: 12px; flex: 1; }
-        .btn-sub { flex: 1; }
-        .btn-sub img { width: 32px; }
+        .btn-sub { flex: 1; background: var(--ios-light-gray); border-radius: 30px; border: none; display: flex; align-items: center; justify-content: center; }
+        .btn-sub img { width: 30px; }
 
-        .btn-delete { 
-            width: 100%; height: 75px; background: var(--ios-red-bg); 
-            -webkit-mask-image: var(--squircle); mask-image: var(--squircle);
-            -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
-            border: none; display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px);
-        }
-        .btn-delete img { width: 30px; filter: drop-shadow(0 2px 4px rgba(255,0,0,0.2)); }
+        .btn-delete { width: 100%; height: 70px; background: var(--ios-red-bg); border-radius: 35px; border: none; display: flex; align-items: center; justify-content: center; }
+        .btn-delete img { width: 28px; }
 
-        /* Налаштування */
-        .btn-opt { width: 100%; padding: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-        .btn-done { background: var(--ios-blue); color: white; height: 65px; font-weight: 800; border: none; margin-top: auto; }
-        .btn-reset-opt { background: rgba(255, 59, 48, 0.4); color: white; }
+        .btn-opt { width: 100%; padding: 12px; background: var(--ios-light-gray); border-radius: 15px; border: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-done { background: var(--ios-blue); color: white; border-radius: 25px; padding: 15px; font-weight: 800; border: none; margin-top: auto; }
+        .btn-reset-opt { background: var(--ios-red-bg); color: var(--ios-red-icon); }
     </style>
 </head>
 <body>
@@ -126,39 +80,38 @@
             </div>
 
             <div id="mainMenu">
-                <button class="squircle-btn btn-main" id="captureBtn"><img src="camera.svg"></button>
+                <button class="btn-main" id="captureBtn"><img src="camera.svg"></button>
                 <div class="row">
-                    <button class="squircle-btn btn-sub" onclick="toggleSets()"><img src="GearSix.svg"></button>
-                    <button class="squircle-btn btn-sub" onclick="flipCam()"><img src="ArrowsClockwise.svg"></button>
+                    <button class="btn-sub" onclick="toggleSets()"><img src="GearSix.svg"></button>
+                    <button class="btn-sub" onclick="flipCam()"><img src="ArrowsClockwise.svg"></button>
                 </div>
                 <button class="btn-delete" onclick="resetView()"><img src="Trash.svg"></button>
             </div>
 
             <div id="settingsPanel">
-                <div style="display:flex; gap:8px; height: 60px;">
-                    <button class="squircle-btn btn-opt" onclick="setLens('0.5')"><img src="05.svg" width="22"></button>
-                    <button class="squircle-btn btn-opt" onclick="setLens('1')"><img src="1x.svg" width="22"></button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-opt" onclick="setLens('0.5')"><img src="05.svg" width="20"></button>
+                    <button class="btn-opt" onclick="setLens('1')"><img src="1x.svg" width="20"></button>
                 </div>
-                <button class="squircle-btn btn-opt" style="height: 60px;" onclick="doRot()"><img src="CameraRotate.svg" width="22"> Поворот 90°</button>
-                <button class="squircle-btn btn-opt" style="height: 60px;" onclick="doMirror()">Відзеркалити</button>
+                <button class="btn-opt" onclick="doRot()"><img src="CameraRotate.svg" width="20"> Поворот 90°</button>
+                <button class="btn-opt" onclick="doMirror()">Відзеркалити</button>
                 
-                <div style="display:flex; gap:5px; height: 50px;">
-                    <button class="squircle-btn btn-opt" onclick="setRes(5)">5MP</button>
-                    <button class="squircle-btn btn-opt" onclick="setRes(12)">12MP</button>
-                    <button class="squircle-btn btn-opt" onclick="setRes(24)">24MP</button>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-opt" style="font-size:10px" onclick="setRes(5)">5MP</button>
+                    <button class="btn-opt" style="font-size:10px" onclick="setRes(12)">12MP</button>
+                    <button class="btn-opt" style="font-size:10px" onclick="setRes(24)">24MP</button>
                 </div>
 
-                <button class="squircle-btn btn-opt btn-reset-opt" style="height: 60px;" onclick="fullReset()">
-                    <img src="Trash.svg" width="22"> Скинути все
+                <button class="btn-opt btn-reset-opt" onclick="fullReset()">
+                    <img src="Trash.svg" width="20"> Скинути все
                 </button>
                 
-                <button class="squircle-btn btn-done" onclick="toggleSets()">ГОТОВО</button>
+                <button class="btn-done" onclick="toggleSets()">ГОТОВО</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Скрипт залишається без змін, він вже ідеально працює
         const video = document.getElementById('videoElement');
         const overlay = document.getElementById('overlayImage');
         const canvas = document.getElementById('photoCanvas');
@@ -166,7 +119,11 @@
 
         async function initCamera() {
             const constraints = {
-                video: { facingMode: isFront ? "user" : "environment", width: { ideal: 1920 * quality }, height: { ideal: 1080 * quality } }
+                video: { 
+                    facingMode: isFront ? "user" : "environment",
+                    width: { ideal: 1920 * quality }, 
+                    height: { ideal: 1080 * quality } 
+                }
             };
             try {
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -178,20 +135,47 @@
         function doRot() { rot = (rot + 90) % 360; updateVis(); }
         function doMirror() { mir = !mir; updateVis(); }
         function updateVis() { video.style.transform = `rotate(${rot}deg) scaleX(${mir ? -1 : 1})`; }
-        function setRes(mp) { quality = mp === 24 ? 2.0 : (mp === 12 ? 1.0 : 0.7); initCamera(); }
-        function fullReset() { rot = 0; mir = false; quality = 1.0; isFront = false; currentGraf = 0; document.getElementById('grafNum').innerText = "0"; overlay.src = "graf0.png"; updateVis(); initCamera(); }
-        function toggleSets() { const m = document.getElementById('mainMenu'), s = document.getElementById('settingsPanel'); const open = m.style.display === 'none'; m.style.display = open ? 'flex' : 'none'; s.style.display = open ? 'none' : 'flex'; }
-        function changeGraf(dir) { currentGraf = (currentGraf + dir + 10) % 10; document.getElementById('grafNum').innerText = currentGraf; overlay.src = `graf${currentGraf}.png`; }
+        
+        function setRes(mp) {
+            quality = mp === 24 ? 2.0 : (mp === 12 ? 1.0 : 0.7);
+            initCamera();
+            alert(`Встановлено якість для ${mp}MP`);
+        }
+
+        function fullReset() {
+            rot = 0; mir = false; quality = 1.0; isFront = false;
+            currentGraf = 0;
+            document.getElementById('grafNum').innerText = "0";
+            overlay.src = "graf0.png";
+            updateVis();
+            initCamera();
+            alert("Налаштування скинуто");
+        }
+
+        function toggleSets() {
+            const m = document.getElementById('mainMenu'), s = document.getElementById('settingsPanel');
+            const open = m.style.display === 'none';
+            m.style.display = open ? 'flex' : 'none'; s.style.display = open ? 'none' : 'flex';
+        }
+
+        function changeGraf(dir) {
+            currentGraf = (currentGraf + dir + 10) % 10;
+            document.getElementById('grafNum').innerText = currentGraf;
+            overlay.src = `graf${currentGraf}.png`;
+        }
 
         document.getElementById('captureBtn').onclick = function() {
             const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.rotate(rot * Math.PI / 180);
             if(mir) ctx.scale(-1, 1);
             ctx.drawImage(video, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
             ctx.restore();
+            
             const img = new Image();
             img.src = overlay.src;
             img.onload = function() {
